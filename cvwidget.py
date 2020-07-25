@@ -103,17 +103,16 @@ class RecordVideo(QtCore.QObject):
                         if data is None:
                             break
                         data = cv2.resize(data[:,:], (640, 480))
-                        print(data)
                         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
                         cv2.normalize(data ,data, 0, 65535, cv2.NORM_MINMAX)
                         np.right_shift(data, 8, data)
-                        img=cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2RGB)
-                        cv2.imshow('Lepton Radiometry', img)
+                        data=cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2RGB)
+                        """ cv2.imshow('Lepton Radiometry', img)
                         cv2.waitKey(1) 
                         #print(data.shape[0])
                         ##
-                        #read, data = self.camera.read()
-                        scale_percent=100
+                        #read, data = self.camera.read()"""
+                        scale_percent=100 
                         if(data.shape[0]>640):
                             if(data.shape[0]>4000):
                                 scale_percent = 5
@@ -134,8 +133,10 @@ class RecordVideo(QtCore.QObject):
                         # resize image
                         data = cv2.resize(data, dsize)
 
-                    if read:
-                        self.image_data.emit(data)
+                        if data.any():
+                            cv2.imshow('Lepton Radiometry', data)
+                            cv2.waitKey(1) 
+                            self.image_data.emit(data)
 
                 finally:
                     libuvc.uvc_stop_streaming(devh)
