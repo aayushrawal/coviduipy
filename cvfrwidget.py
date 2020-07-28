@@ -422,7 +422,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
 
 class MainWidget(QtWidgets.QWidget):
-    def __init__(self, haarcascade_filepath, parent=None, scale=1.3, feed=0):
+    def __init__(self, haarcascade_filepath, parent=None, scale=1, feed=2):
         super().__init__(parent)
         fp = haarcascade_filepath
         self.face_detection_widget = FaceDetectionWidget(fp,scale=scale)

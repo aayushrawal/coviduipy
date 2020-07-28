@@ -102,6 +102,7 @@ class RecordVideo(QtCore.QObject):
                         read = data
                         if data is None:
                             break
+                        #print(data)
                         data = cv2.resize(data[:,:], (640, 480))
                         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
                         cv2.normalize(data ,data, 0, 65535, cv2.NORM_MINMAX)
@@ -134,9 +135,11 @@ class RecordVideo(QtCore.QObject):
                         data = cv2.resize(data, dsize)
 
                         if data.any():
-                            cv2.imshow('Lepton Radiometry', data)
+                            cv2.imshow('Thermal Camera', data)
                             cv2.waitKey(1) 
+                            
                             self.image_data.emit(data)
+                            
 
                 finally:
                     libuvc.uvc_stop_streaming(devh)
@@ -196,7 +199,8 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         faces = self.detect_faces(image_data)
 
         for (x, y, w, h) in faces:
-            #self.temp = x
+            #self.temp = 
+            
             cv2.rectangle(image_data, # Face
                           (x, y),
                           (x+w, y+h),
