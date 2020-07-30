@@ -188,13 +188,13 @@ class HandleScan(QtCore.QThread):
                 elif(self.scanprogress == 3):
                     temptemp = self.tempval
                     
-                    if(temptemp!=0):
+                    """ if(temptemp!=0):
                         if (temptemp > 145):
                             temptemp = temptemp - 48
                         if (temptemp < 55):
                             temptemp = temptemp + 48
                         #if (temptemp < 95) or (temptemp > 100):
-                        #    temptemp = int(random.randrange(96, 99))
+                        #    temptemp = int(random.randrange(96, 99)) """
 
                     self.flirreading = max(temptemp, self.flirreading)
                 else:

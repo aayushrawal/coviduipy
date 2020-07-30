@@ -15,15 +15,14 @@ try:
 except ImportError:
   from Queue import Queue
 import platform
+from copy import deepcopy as dc
 
 class RecordVideo(QtCore.QObject):
     image_data = QtCore.pyqtSignal(np.ndarray)
     BUF_SIZE = 2
-    #PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(RecordVideo.py_frame_callback)
 
     def __init__(self, camera_port=0, parent=None):
         super().__init__(parent)
-        #self.camera = cv2.VideoCapture(camera_port)
         self.stop = False
         self.timer = QtCore.QBasicTimer()
         self.q = Queue(self.BUF_SIZE)
@@ -41,8 +40,6 @@ class RecordVideo(QtCore.QObject):
         if not self.q.full():
             self.q.put(data)
 
-    #PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(self.py_frame_callback)
-    ##
     def start_recording(self):
         self.timer.start(0, self)
 
@@ -51,7 +48,7 @@ class RecordVideo(QtCore.QObject):
             return
         if self.stop:
             return
-        ##
+        
         ctx = POINTER(uvc_context)()
         dev = POINTER(uvc_device)()
         devh = POINTER(uvc_device_handle)()
@@ -95,50 +92,19 @@ class RecordVideo(QtCore.QObject):
                     exit(1) 
                 else:print("uvc_start_streaming worked")
 
-                ##
                 try:
                     while True:
                         data = self.q.get(True, 500)
                         read = data
                         if data is None:
                             break
-                        #print(data)
+                        
                         data = cv2.resize(data[:,:], (640, 480))
                         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
-                        cv2.normalize(data ,data, 0, 65535, cv2.NORM_MINMAX)
-                        np.right_shift(data, 8, data)
-                        data=cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2RGB)
-                        """ cv2.imshow('Lepton Radiometry', img)
-                        cv2.waitKey(1) 
-                        #print(data.shape[0])
-                        ##
-                        #read, data = self.camera.read()"""
-                        scale_percent=100 
-                        if(data.shape[0]>640):
-                            if(data.shape[0]>4000):
-                                scale_percent = 5
-                            elif(data.shape[0] > 2000):
-                                scale_percent = 10
-                            elif (data.shape[0] > 1000):
-                                scale_percent = 20
-                            elif (data.shape[0] > 640):
-                                scale_percent = 35
-                    
-                        # calculate the 50 percent of original dimensions
-                        width = int(data.shape[1] * scale_percent / 100)
-                        height = int(data.shape[0] * scale_percent / 100)
-
-                        # dsize
-                        dsize = (width, height)
-
-                        # resize image
-                        data = cv2.resize(data, dsize)
 
                         if data.any():
-                            cv2.imshow('Thermal Camera', data)
-                            cv2.waitKey(1) 
-                            
                             self.image_data.emit(data)
+                            
                             
 
                 finally:
@@ -193,46 +159,71 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         cv2.putText(img, "{0:.1f} degF".format(val), loc, cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2)
         x, y = loc
         cv2.line(img, (x - 2, y), (x + 2, y), color, 1)
-        cv2.line(img, (x, y - 2), (x, y + 2), color, 1)
+        cv2.line(img, (x, y - 2), (x, y + 2), color, 1) 
 
     def image_data_slot(self, image_data):
+
+        
+
+
+        image_data_clean = dc(image_data)
+
+        
+        image_data = self.raw_to_8bit(image_data)
+
+        
+
+        scale_percent = 100 
+        if(image_data.shape[0]>640):
+            if(image_data.shape[0]>4000):
+                scale_percent = 5
+            elif(image_data.shape[0] > 2000):
+                scale_percent = 10
+            elif (image_data.shape[0] > 1000):
+                scale_percent = 20
+            elif (image_data.shape[0] > 640):
+                scale_percent = 35
+    
+        # calculate the 50 percent of original dimensions
+        width = int(image_data.shape[1] * scale_percent / 100)
+        height = int(image_data.shape[0] * scale_percent / 100)
+
+        # dsize
+        dsize = (width, height)
+
+        # resize image
+        image_data = cv2.resize(image_data, dsize)
+
+        
+
         faces = self.detect_faces(image_data)
+
+        
 
         for (x, y, w, h) in faces:
             #self.temp = 
             
             cv2.rectangle(image_data, # Face
-                          (x, y),
-                          (x+w, y+h),
-                          self._red,
-                          self._width)
-            cv2.rectangle(image_data, #ForHead
-                          (x, y),
-                          (int((x + w)), int((y + h) / 2)),
-                          self._green,
-                          self._width)
-            cv2.rectangle(image_data, #SinusLeft
-                          (x, int((y + h)/1.7)),
-                          (int((x + w/3.5)), int((y + h) / 1.2)),
-                          self._orange,
-                          self._width)
-            cv2.rectangle(image_data, #SinusRight
-                          (int((x + w - (w/3.5))), int((y + h)/1.7)),
-                          (int((x+w)), int((y + h) / 1.2)),
-                          self._orange,
-                          self._width)
+                (x, y),
+                (x+w, y+h),
+                self._red,
+                self._width) 
+            
 
             try:
-                forhead_roi = image_data[x: (int((x + w))), y:(int((y + h) / 2))]
-                Lsinus_roi = image_data[x:int((x + w/3.5)), int((y + h)/1.7): int((y + h) / 1.2)]
-                Rsinus_roi = image_data[int((x + w - (w/3.5))):int((x+w)), int((y + h)/1.7): int((y + h) / 1.2)]
+                
+                face_roi = image_data[x: int(x+w), y: int(y+h)]
+                face_roi_clean = image_data_clean[x: int(x+w), y: int(y+h)]
 
+                minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(face_roi_clean)
 
-                err = 20
-                self.temp[1] = int(forhead_roi[:, :, 0].max()) - err
-                self.temp[2] = int(Lsinus_roi[:, :, 0].max()) - err
-                self.temp[3] = int(Rsinus_roi[:, :, 0].max()) - err
-                self.temp[0] = max(self.temp[1], self.temp[2], self.temp[3])
+                self.display_temperature(image_data_clean, maxVal, maxLoc, (0, 0, 255))
+                cv2.imshow("thermal", image_data)
+                cv2.waitKey(1)
+
+                #self.temp[0]=self.ktof(face_roi_clean[maxLoc])
+                
+                print("{0:.1f} degF".format(self.ktof(face_roi_clean[maxLoc])))
 
             except(ValueError):
                 pass
@@ -242,7 +233,6 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
         if self.image.size() != self.size():
             self.setFixedSize(self.image.size())
-        #self.image = cv2.resize(self.image, (320, 240), interpolation=cv2.INTER_AREA)
         self.update()
 
 
@@ -265,7 +255,6 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
-        #self.image = cv2.resize(self.image, (640, 480), interpolation=cv2.INTER_AREA)
         painter.drawImage(0, 0, self.image)
         self.image = QtGui.QImage()
 
@@ -278,8 +267,8 @@ class MainWidget(QtWidgets.QWidget):
 
         self.face_detection_widget.vsc = scale
 
-        # TODO: set video port
-        self.record_video = RecordVideo(feed)#"I:\\The.Big.Bang.Theory.S11.720p.WEB-DL.x264.AAC\\s11e1.mp4")
+        
+        self.record_video = RecordVideo(feed)
         print(self.record_video)
         image_data_slot = self.face_detection_widget.image_data_slot
         self.record_video.image_data.connect(image_data_slot)
@@ -288,9 +277,7 @@ class MainWidget(QtWidgets.QWidget):
 
         layout.addWidget(self.face_detection_widget)
 
-        ##
-        #PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(self.record_video.py_frame_callback)
-
+        
         self.record_video.start_recording()
         self.setLayout(layout)
 

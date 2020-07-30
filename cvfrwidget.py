@@ -200,32 +200,34 @@ class RecordVideo(QtCore.QObject):
         self.timer.start(0, self)
 
     def timerEvent(self, event):
-        if (event.timerId() != self.timer.timerId()):
-            return
-        read, data = self.camera.read()
-        total_frames = self.camera.get(cv2.CAP_PROP_FRAME_COUNT)
-        if(data.shape[0]>640):
-            if(data.shape[0]>4000):
-                scale_percent = 5
-            elif(data.shape[0] > 2000):
-                scale_percent = 10
-            elif (data.shape[0] > 1000):
-                scale_percent = 20
-            elif (data.shape[0] > 640):
-                scale_percent = 35
+        try:
+            if (event.timerId() != self.timer.timerId()):
+                return
+            read, data = self.camera.read()
+            total_frames = self.camera.get(cv2.CAP_PROP_FRAME_COUNT)
+            if(data.shape[0]>640):
+                if(data.shape[0]>4000):
+                    scale_percent = 5
+                elif(data.shape[0] > 2000):
+                    scale_percent = 10
+                elif (data.shape[0] > 1000):
+                    scale_percent = 20
+                elif (data.shape[0] > 640):
+                    scale_percent = 35
 
-            # calculate the 50 percent of original dimensions
-            width = int(data.shape[1] * scale_percent / 100)
-            height = int(data.shape[0] * scale_percent / 100)
+                # calculate the 50 percent of original dimensions
+                width = int(data.shape[1] * scale_percent / 100)
+                height = int(data.shape[0] * scale_percent / 100)
 
-            # dsize
-            dsize = (width, height)
+                # dsize
+                dsize = (width, height)
 
-            # resize image
-            data = cv2.resize(data, dsize)
-        if read:
-            self.image_data.emit(data)
-            self.lastframe = data
+                # resize image
+                data = cv2.resize(data, dsize)
+            if read:
+                self.image_data.emit(data)
+                self.lastframe = data
+        finally:self.camera.release()
         #if cv2.waitKey(2):
         #    self.image_data.emit(self.lastframe)
         #    return
@@ -422,7 +424,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
 
 class MainWidget(QtWidgets.QWidget):
-    def __init__(self, haarcascade_filepath, parent=None, scale=1, feed=2):
+    def __init__(self, haarcascade_filepath, parent=None, scale=1, feed=0):
         super().__init__(parent)
         fp = haarcascade_filepath
         self.face_detection_widget = FaceDetectionWidget(fp,scale=scale)
