@@ -196,7 +196,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
         
 
-        faces = self.detect_faces(image_data)
+        """ faces = self.detect_faces(image_data)
 
         
 
@@ -207,7 +207,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
                 (x, y),
                 (x+w, y+h),
                 self._red,
-                self._width) 
+                self._width)  
             
 
             try:
@@ -215,18 +215,26 @@ class FaceDetectionWidget(QtWidgets.QWidget):
                 face_roi = image_data[x: int(x+w), y: int(y+h)]
                 face_roi_clean = image_data_clean[x: int(x+w), y: int(y+h)]
 
-                minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(face_roi_clean)
+                minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data_clean)
 
-                self.display_temperature(image_data_clean, maxVal, maxLoc, (0, 0, 255))
+                self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
                 cv2.imshow("thermal", image_data)
                 cv2.waitKey(1)
 
-                #self.temp[0]=self.ktof(face_roi_clean[maxLoc])
+                self.temp[0]=round(self.ktof(maxVal),2)
                 
-                print("{0:.1f} degF".format(self.ktof(face_roi_clean[maxLoc])))
+                #print("{0:.1f} degF".format(self.ktof(maxVal)))
 
             except(ValueError):
-                pass
+                pass """
+
+        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data_clean)
+
+        self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
+        cv2.imshow("thermal", image_data)
+        cv2.waitKey(1)
+
+        self.temp[0]=round(self.ktof(maxVal),2)
 
         image_data = cv2.resize(image_data,(int(320*self.vsc),int(240*self.vsc)),interpolation=cv2.INTER_AREA)
         self.image = self.get_qimage(image_data)

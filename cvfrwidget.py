@@ -227,6 +227,7 @@ class RecordVideo(QtCore.QObject):
             if read:
                 self.image_data.emit(data)
                 self.lastframe = data
+            self.camera.release()
         finally:self.camera.release()
         #if cv2.waitKey(2):
         #    self.image_data.emit(self.lastframe)
