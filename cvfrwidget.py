@@ -187,7 +187,7 @@ class TrainFR(QtCore.QThread):
 class RecordVideo(QtCore.QObject):
     image_data = QtCore.pyqtSignal(np.ndarray)
 
-    def __init__(self, camera_port=0, parent=None):
+    def __init__(self, camera_port=4, parent=None):
         super().__init__(parent)
         self.camera_port = camera_port
         self.camera = cv2.VideoCapture(camera_port)
@@ -200,35 +200,34 @@ class RecordVideo(QtCore.QObject):
         self.timer.start(0, self)
 
     def timerEvent(self, event):
-        try:
-            if (event.timerId() != self.timer.timerId()):
-                return
-            read, data = self.camera.read()
-            total_frames = self.camera.get(cv2.CAP_PROP_FRAME_COUNT)
-            if(data.shape[0]>640):
-                if(data.shape[0]>4000):
-                    scale_percent = 5
-                elif(data.shape[0] > 2000):
-                    scale_percent = 10
-                elif (data.shape[0] > 1000):
-                    scale_percent = 20
-                elif (data.shape[0] > 640):
-                    scale_percent = 35
+        
+        if (event.timerId() != self.timer.timerId()):
+            return
+        read, data = self.camera.read()
+        total_frames = self.camera.get(cv2.CAP_PROP_FRAME_COUNT)
+        if(data.shape[0]>640):
+            if(data.shape[0]>4000):
+                scale_percent = 5
+            elif(data.shape[0] > 2000):
+                scale_percent = 10
+            elif (data.shape[0] > 1000):
+                scale_percent = 20
+            elif (data.shape[0] > 640):
+                scale_percent = 35
 
-                # calculate the 50 percent of original dimensions
-                width = int(data.shape[1] * scale_percent / 100)
-                height = int(data.shape[0] * scale_percent / 100)
+            # calculate the 50 percent of original dimensions
+            width = int(data.shape[1] * scale_percent / 100)
+            height = int(data.shape[0] * scale_percent / 100)
 
-                # dsize
-                dsize = (width, height)
+            # dsize
+            dsize = (width, height)
 
-                # resize image
-                data = cv2.resize(data, dsize)
-            if read:
-                self.image_data.emit(data)
-                self.lastframe = data
-            self.camera.release()
-        finally:self.camera.release()
+            # resize image
+            data = cv2.resize(data, dsize)
+        if read:
+            self.image_data.emit(data)
+            self.lastframe = data
+            
         #if cv2.waitKey(2):
         #    self.image_data.emit(self.lastframe)
         #    return
@@ -425,7 +424,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
 
 class MainWidget(QtWidgets.QWidget):
-    def __init__(self, haarcascade_filepath, parent=None, scale=1, feed=0):
+    def __init__(self, haarcascade_filepath, parent=None, scale=1, feed=4):
         super().__init__(parent)
         fp = haarcascade_filepath
         self.face_detection_widget = FaceDetectionWidget(fp,scale=scale)

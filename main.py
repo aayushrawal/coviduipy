@@ -545,35 +545,17 @@ class MainWindow(QWidget):
 
         div = 350
         if self.Platform == 1:
-            #self.fd = FDWidget(cascade_filepath,scale=(self.geometry().height()/div), feed="http://localhost:6080")#"I:\\The.Big.Bang.Theory.S11.720p.WEB-DL.x264.AAC\\s11e1.mp4")
-            """ self.fd = FDWidget(cascade_filepath,scale=(self.geometry().height()/div), feed="http://192.168.86.35:8081/")
-            self.fr = FRWidget(cascade_filepath,scale=(self.geometry().height()/div), feed="I:\\The.Big.Bang.Theory.S11.720p.WEB-DL.x264.AAC\\s11e2.mp4") """
-            self.fd = FDWidget(cascade_filepath,scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath,scale=(self.geometry().height()/div), feed=2)
+            
+            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
+            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=4)
         elif (self.Platform == 2):
-            #self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height() / div),
-            #                  feed="http://localhost:6080")
-            """ self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height() / div),
-                              feed="http://192.168.86.35:8081/")
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height() / div),
-                               feed="http://192.168.86.35:8082/") """
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height() / div),
-                              feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height() / div),
-                               feed=2)
+            
+            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
+            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=4)
         else:
-            #self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height() / div),
-            #                   feed="http://localhost:6080")  # "I:\\The.Big.Bang.Theory.S11.720p.WEB-DL.x264.AAC\\s11e1.mp4")
-            """ self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height() / div),
-                               feed="http://192.168.86.35:8081") """
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height() / div),
-                               feed=0)
-            #self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height() / div),
-            #                   feed="http://localhost:6080")  # I:\\The.Big.Bang.Theory.S11.720p.WEB-DL.x264.AAC\\s11e2.mp4")
-            """ self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height() / div),
-                               feed="http://192.168.86.35:8081/") """
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height() / div),
-                               feed=2)
+            
+            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
+            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=4)
 
         self.usermsg = QtWidgets.QLabel()
         self.usermsg.setText("Max Temperature: 0")
