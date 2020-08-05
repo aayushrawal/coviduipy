@@ -48,7 +48,7 @@ add_library(uvc SHARED IMPORTED)
 set_property(TARGET uvc APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(uvc PROPERTIES
   IMPORTED_LINK_INTERFACE_LIBRARIES_RELEASE "/usr/lib/x86_64-linux-gnu/libusb-1.0.so"
-  IMPORTED_LOCATION_RELEASE "/home/sensor/Desktop/libuvc/build/libuvc.so"
+  IMPORTED_LOCATION_RELEASE "/home/sensor/Desktop/coviduipy/libuvc/build/libuvc.so"
   IMPORTED_SONAME_RELEASE "libuvc.so"
   )
 

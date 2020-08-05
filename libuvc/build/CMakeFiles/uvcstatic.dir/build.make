@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sensor/Desktop/libuvc
+CMAKE_SOURCE_DIR = /home/sensor/Desktop/coviduipy/libuvc
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sensor/Desktop/libuvc/build
+CMAKE_BINARY_DIR = /home/sensor/Desktop/coviduipy/libuvc/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/uvcstatic.dir/depend.make
@@ -59,107 +59,107 @@ include CMakeFiles/uvcstatic.dir/flags.make
 
 CMakeFiles/uvcstatic.dir/src/ctrl.c.o: CMakeFiles/uvcstatic.dir/flags.make
 CMakeFiles/uvcstatic.dir/src/ctrl.c.o: ../src/ctrl.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/uvcstatic.dir/src/ctrl.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/ctrl.c.o   -c /home/sensor/Desktop/libuvc/src/ctrl.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/uvcstatic.dir/src/ctrl.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/ctrl.c.o   -c /home/sensor/Desktop/coviduipy/libuvc/src/ctrl.c
 
 CMakeFiles/uvcstatic.dir/src/ctrl.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/uvcstatic.dir/src/ctrl.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/libuvc/src/ctrl.c > CMakeFiles/uvcstatic.dir/src/ctrl.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/coviduipy/libuvc/src/ctrl.c > CMakeFiles/uvcstatic.dir/src/ctrl.c.i
 
 CMakeFiles/uvcstatic.dir/src/ctrl.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/uvcstatic.dir/src/ctrl.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/libuvc/src/ctrl.c -o CMakeFiles/uvcstatic.dir/src/ctrl.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/coviduipy/libuvc/src/ctrl.c -o CMakeFiles/uvcstatic.dir/src/ctrl.c.s
 
 CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.o: CMakeFiles/uvcstatic.dir/flags.make
 CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.o: ../src/ctrl-gen.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.o   -c /home/sensor/Desktop/libuvc/src/ctrl-gen.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.o   -c /home/sensor/Desktop/coviduipy/libuvc/src/ctrl-gen.c
 
 CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/libuvc/src/ctrl-gen.c > CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/coviduipy/libuvc/src/ctrl-gen.c > CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.i
 
 CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/libuvc/src/ctrl-gen.c -o CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/coviduipy/libuvc/src/ctrl-gen.c -o CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.s
 
 CMakeFiles/uvcstatic.dir/src/device.c.o: CMakeFiles/uvcstatic.dir/flags.make
 CMakeFiles/uvcstatic.dir/src/device.c.o: ../src/device.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/uvcstatic.dir/src/device.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/device.c.o   -c /home/sensor/Desktop/libuvc/src/device.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/uvcstatic.dir/src/device.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/device.c.o   -c /home/sensor/Desktop/coviduipy/libuvc/src/device.c
 
 CMakeFiles/uvcstatic.dir/src/device.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/uvcstatic.dir/src/device.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/libuvc/src/device.c > CMakeFiles/uvcstatic.dir/src/device.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/coviduipy/libuvc/src/device.c > CMakeFiles/uvcstatic.dir/src/device.c.i
 
 CMakeFiles/uvcstatic.dir/src/device.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/uvcstatic.dir/src/device.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/libuvc/src/device.c -o CMakeFiles/uvcstatic.dir/src/device.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/coviduipy/libuvc/src/device.c -o CMakeFiles/uvcstatic.dir/src/device.c.s
 
 CMakeFiles/uvcstatic.dir/src/diag.c.o: CMakeFiles/uvcstatic.dir/flags.make
 CMakeFiles/uvcstatic.dir/src/diag.c.o: ../src/diag.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/uvcstatic.dir/src/diag.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/diag.c.o   -c /home/sensor/Desktop/libuvc/src/diag.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/uvcstatic.dir/src/diag.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/diag.c.o   -c /home/sensor/Desktop/coviduipy/libuvc/src/diag.c
 
 CMakeFiles/uvcstatic.dir/src/diag.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/uvcstatic.dir/src/diag.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/libuvc/src/diag.c > CMakeFiles/uvcstatic.dir/src/diag.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/coviduipy/libuvc/src/diag.c > CMakeFiles/uvcstatic.dir/src/diag.c.i
 
 CMakeFiles/uvcstatic.dir/src/diag.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/uvcstatic.dir/src/diag.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/libuvc/src/diag.c -o CMakeFiles/uvcstatic.dir/src/diag.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/coviduipy/libuvc/src/diag.c -o CMakeFiles/uvcstatic.dir/src/diag.c.s
 
 CMakeFiles/uvcstatic.dir/src/frame.c.o: CMakeFiles/uvcstatic.dir/flags.make
 CMakeFiles/uvcstatic.dir/src/frame.c.o: ../src/frame.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/uvcstatic.dir/src/frame.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/frame.c.o   -c /home/sensor/Desktop/libuvc/src/frame.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/uvcstatic.dir/src/frame.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/frame.c.o   -c /home/sensor/Desktop/coviduipy/libuvc/src/frame.c
 
 CMakeFiles/uvcstatic.dir/src/frame.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/uvcstatic.dir/src/frame.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/libuvc/src/frame.c > CMakeFiles/uvcstatic.dir/src/frame.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/coviduipy/libuvc/src/frame.c > CMakeFiles/uvcstatic.dir/src/frame.c.i
 
 CMakeFiles/uvcstatic.dir/src/frame.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/uvcstatic.dir/src/frame.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/libuvc/src/frame.c -o CMakeFiles/uvcstatic.dir/src/frame.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/coviduipy/libuvc/src/frame.c -o CMakeFiles/uvcstatic.dir/src/frame.c.s
 
 CMakeFiles/uvcstatic.dir/src/init.c.o: CMakeFiles/uvcstatic.dir/flags.make
 CMakeFiles/uvcstatic.dir/src/init.c.o: ../src/init.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/uvcstatic.dir/src/init.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/init.c.o   -c /home/sensor/Desktop/libuvc/src/init.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/uvcstatic.dir/src/init.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/init.c.o   -c /home/sensor/Desktop/coviduipy/libuvc/src/init.c
 
 CMakeFiles/uvcstatic.dir/src/init.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/uvcstatic.dir/src/init.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/libuvc/src/init.c > CMakeFiles/uvcstatic.dir/src/init.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/coviduipy/libuvc/src/init.c > CMakeFiles/uvcstatic.dir/src/init.c.i
 
 CMakeFiles/uvcstatic.dir/src/init.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/uvcstatic.dir/src/init.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/libuvc/src/init.c -o CMakeFiles/uvcstatic.dir/src/init.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/coviduipy/libuvc/src/init.c -o CMakeFiles/uvcstatic.dir/src/init.c.s
 
 CMakeFiles/uvcstatic.dir/src/stream.c.o: CMakeFiles/uvcstatic.dir/flags.make
 CMakeFiles/uvcstatic.dir/src/stream.c.o: ../src/stream.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/uvcstatic.dir/src/stream.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/stream.c.o   -c /home/sensor/Desktop/libuvc/src/stream.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/uvcstatic.dir/src/stream.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/stream.c.o   -c /home/sensor/Desktop/coviduipy/libuvc/src/stream.c
 
 CMakeFiles/uvcstatic.dir/src/stream.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/uvcstatic.dir/src/stream.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/libuvc/src/stream.c > CMakeFiles/uvcstatic.dir/src/stream.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/coviduipy/libuvc/src/stream.c > CMakeFiles/uvcstatic.dir/src/stream.c.i
 
 CMakeFiles/uvcstatic.dir/src/stream.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/uvcstatic.dir/src/stream.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/libuvc/src/stream.c -o CMakeFiles/uvcstatic.dir/src/stream.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/coviduipy/libuvc/src/stream.c -o CMakeFiles/uvcstatic.dir/src/stream.c.s
 
 CMakeFiles/uvcstatic.dir/src/misc.c.o: CMakeFiles/uvcstatic.dir/flags.make
 CMakeFiles/uvcstatic.dir/src/misc.c.o: ../src/misc.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/uvcstatic.dir/src/misc.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/misc.c.o   -c /home/sensor/Desktop/libuvc/src/misc.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/uvcstatic.dir/src/misc.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/uvcstatic.dir/src/misc.c.o   -c /home/sensor/Desktop/coviduipy/libuvc/src/misc.c
 
 CMakeFiles/uvcstatic.dir/src/misc.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/uvcstatic.dir/src/misc.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/libuvc/src/misc.c > CMakeFiles/uvcstatic.dir/src/misc.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/sensor/Desktop/coviduipy/libuvc/src/misc.c > CMakeFiles/uvcstatic.dir/src/misc.c.i
 
 CMakeFiles/uvcstatic.dir/src/misc.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/uvcstatic.dir/src/misc.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/libuvc/src/misc.c -o CMakeFiles/uvcstatic.dir/src/misc.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/sensor/Desktop/coviduipy/libuvc/src/misc.c -o CMakeFiles/uvcstatic.dir/src/misc.c.s
 
 # Object files for target uvcstatic
 uvcstatic_OBJECTS = \
@@ -185,7 +185,7 @@ libuvcstatic.a: CMakeFiles/uvcstatic.dir/src/stream.c.o
 libuvcstatic.a: CMakeFiles/uvcstatic.dir/src/misc.c.o
 libuvcstatic.a: CMakeFiles/uvcstatic.dir/build.make
 libuvcstatic.a: CMakeFiles/uvcstatic.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking C static library libuvcstatic.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking C static library libuvcstatic.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/uvcstatic.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/uvcstatic.dir/link.txt --verbose=$(VERBOSE)
 
@@ -199,6 +199,6 @@ CMakeFiles/uvcstatic.dir/clean:
 .PHONY : CMakeFiles/uvcstatic.dir/clean
 
 CMakeFiles/uvcstatic.dir/depend:
-	cd /home/sensor/Desktop/libuvc/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sensor/Desktop/libuvc /home/sensor/Desktop/libuvc /home/sensor/Desktop/libuvc/build /home/sensor/Desktop/libuvc/build /home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/sensor/Desktop/coviduipy/libuvc/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/sensor/Desktop/coviduipy/libuvc /home/sensor/Desktop/coviduipy/libuvc /home/sensor/Desktop/coviduipy/libuvc/build /home/sensor/Desktop/coviduipy/libuvc/build /home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/uvcstatic.dir/depend
 

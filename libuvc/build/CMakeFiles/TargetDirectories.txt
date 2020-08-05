@@ -1,8 +1,8 @@
-/home/sensor/Desktop/libuvc/build/CMakeFiles/install/strip.dir
-/home/sensor/Desktop/libuvc/build/CMakeFiles/install/local.dir
-/home/sensor/Desktop/libuvc/build/CMakeFiles/install.dir
-/home/sensor/Desktop/libuvc/build/CMakeFiles/list_install_components.dir
-/home/sensor/Desktop/libuvc/build/CMakeFiles/rebuild_cache.dir
-/home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir
-/home/sensor/Desktop/libuvc/build/CMakeFiles/edit_cache.dir
-/home/sensor/Desktop/libuvc/build/CMakeFiles/uvc.dir
+/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/install/strip.dir
+/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/install/local.dir
+/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/install.dir
+/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/list_install_components.dir
+/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/rebuild_cache.dir
+/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir
+/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/edit_cache.dir
+/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvc.dir

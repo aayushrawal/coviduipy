@@ -4,14 +4,14 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/sensor/Desktop/libuvc/src/ctrl-gen.c" "/home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.o"
-  "/home/sensor/Desktop/libuvc/src/ctrl.c" "/home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir/src/ctrl.c.o"
-  "/home/sensor/Desktop/libuvc/src/device.c" "/home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir/src/device.c.o"
-  "/home/sensor/Desktop/libuvc/src/diag.c" "/home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir/src/diag.c.o"
-  "/home/sensor/Desktop/libuvc/src/frame.c" "/home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir/src/frame.c.o"
-  "/home/sensor/Desktop/libuvc/src/init.c" "/home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir/src/init.c.o"
-  "/home/sensor/Desktop/libuvc/src/misc.c" "/home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir/src/misc.c.o"
-  "/home/sensor/Desktop/libuvc/src/stream.c" "/home/sensor/Desktop/libuvc/build/CMakeFiles/uvcstatic.dir/src/stream.c.o"
+  "/home/sensor/Desktop/coviduipy/libuvc/src/ctrl-gen.c" "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir/src/ctrl-gen.c.o"
+  "/home/sensor/Desktop/coviduipy/libuvc/src/ctrl.c" "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir/src/ctrl.c.o"
+  "/home/sensor/Desktop/coviduipy/libuvc/src/device.c" "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir/src/device.c.o"
+  "/home/sensor/Desktop/coviduipy/libuvc/src/diag.c" "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir/src/diag.c.o"
+  "/home/sensor/Desktop/coviduipy/libuvc/src/frame.c" "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir/src/frame.c.o"
+  "/home/sensor/Desktop/coviduipy/libuvc/src/init.c" "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir/src/init.c.o"
+  "/home/sensor/Desktop/coviduipy/libuvc/src/misc.c" "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir/src/misc.c.o"
+  "/home/sensor/Desktop/coviduipy/libuvc/src/stream.c" "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/uvcstatic.dir/src/stream.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

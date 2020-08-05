@@ -36,57 +36,57 @@ libgen.h
 
 ../include/utlist.h
 
-/home/sensor/Desktop/libuvc/src/ctrl-gen.c
+/home/sensor/Desktop/coviduipy/libuvc/src/ctrl-gen.c
 libuvc/libuvc.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc.h
 libuvc/libuvc_internal.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc_internal.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc_internal.h
 
-/home/sensor/Desktop/libuvc/src/ctrl.c
+/home/sensor/Desktop/coviduipy/libuvc/src/ctrl.c
 libuvc/libuvc.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc.h
 libuvc/libuvc_internal.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc_internal.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc_internal.h
 
-/home/sensor/Desktop/libuvc/src/device.c
+/home/sensor/Desktop/coviduipy/libuvc/src/device.c
 libuvc/libuvc.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc.h
 libuvc/libuvc_internal.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc_internal.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc_internal.h
 
-/home/sensor/Desktop/libuvc/src/diag.c
+/home/sensor/Desktop/coviduipy/libuvc/src/diag.c
 libuvc/libuvc.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc.h
 libuvc/libuvc_internal.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc_internal.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc_internal.h
 
-/home/sensor/Desktop/libuvc/src/frame.c
+/home/sensor/Desktop/coviduipy/libuvc/src/frame.c
 libuvc/libuvc.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc.h
 libuvc/libuvc_internal.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc_internal.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc_internal.h
 
-/home/sensor/Desktop/libuvc/src/init.c
+/home/sensor/Desktop/coviduipy/libuvc/src/init.c
 libuvc/libuvc.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc.h
 libuvc/libuvc_internal.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc_internal.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc_internal.h
 
-/home/sensor/Desktop/libuvc/src/misc.c
+/home/sensor/Desktop/coviduipy/libuvc/src/misc.c
 string.h
 -
 stdlib.h
 -
 
-/home/sensor/Desktop/libuvc/src/stream.c
+/home/sensor/Desktop/coviduipy/libuvc/src/stream.c
 libuvc/libuvc.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc.h
 libuvc/libuvc_internal.h
-/home/sensor/Desktop/libuvc/src/libuvc/libuvc_internal.h
+/home/sensor/Desktop/coviduipy/libuvc/src/libuvc/libuvc_internal.h
 time_mac.h
-/home/sensor/Desktop/libuvc/src/time_mac.h
+/home/sensor/Desktop/coviduipy/libuvc/src/time_mac.h
 
-/home/sensor/Desktop/libuvc/src/time_mac.h
+/home/sensor/Desktop/coviduipy/libuvc/src/time_mac.h
 stdio.h
 -
 stdlib.h

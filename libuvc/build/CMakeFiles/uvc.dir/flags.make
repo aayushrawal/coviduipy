@@ -6,5 +6,5 @@ C_FLAGS = -O3 -DNDEBUG -fPIC
 
 C_DEFINES = -Duvc_EXPORTS
 
-C_INCLUDES = -I/home/sensor/Desktop/libuvc/include -I/home/sensor/Desktop/libuvc/build/include 
+C_INCLUDES = -I/home/sensor/Desktop/coviduipy/libuvc/include -I/home/sensor/Desktop/coviduipy/libuvc/build/include 
 

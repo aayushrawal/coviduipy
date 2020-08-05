@@ -44,10 +44,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/sensor/Desktop/libuvc
+CMAKE_SOURCE_DIR = /home/sensor/Desktop/coviduipy/libuvc
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/sensor/Desktop/libuvc/build
+CMAKE_BINARY_DIR = /home/sensor/Desktop/coviduipy/libuvc/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -76,14 +76,14 @@ clean: CMakeFiles/uvc.dir/clean
 CMakeFiles/uvcstatic.dir/all:
 	$(MAKE) -f CMakeFiles/uvcstatic.dir/build.make CMakeFiles/uvcstatic.dir/depend
 	$(MAKE) -f CMakeFiles/uvcstatic.dir/build.make CMakeFiles/uvcstatic.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=10,11,12,13,14,15,16,17,18 "Built target uvcstatic"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=10,11,12,13,14,15,16,17,18 "Built target uvcstatic"
 .PHONY : CMakeFiles/uvcstatic.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/uvcstatic.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sensor/Desktop/libuvc/build/CMakeFiles 9
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles 9
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/uvcstatic.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sensor/Desktop/libuvc/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles 0
 .PHONY : CMakeFiles/uvcstatic.dir/rule
 
 # Convenience name for target.
@@ -103,14 +103,14 @@ CMakeFiles/uvcstatic.dir/clean:
 CMakeFiles/uvc.dir/all:
 	$(MAKE) -f CMakeFiles/uvc.dir/build.make CMakeFiles/uvc.dir/depend
 	$(MAKE) -f CMakeFiles/uvc.dir/build.make CMakeFiles/uvc.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/sensor/Desktop/libuvc/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9 "Built target uvc"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9 "Built target uvc"
 .PHONY : CMakeFiles/uvc.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/uvc.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sensor/Desktop/libuvc/build/CMakeFiles 9
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles 9
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/uvc.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/sensor/Desktop/libuvc/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles 0
 .PHONY : CMakeFiles/uvc.dir/rule
 
 # Convenience name for target.

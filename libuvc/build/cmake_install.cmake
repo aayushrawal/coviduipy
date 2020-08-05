@@ -1,4 +1,4 @@
-# Install script for directory: /home/sensor/Desktop/libuvc
+# Install script for directory: /home/sensor/Desktop/coviduipy/libuvc
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -52,7 +52,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/usr/local/lib" TYPE SHARED_LIBRARY FILES "/home/sensor/Desktop/libuvc/build/libuvc.so")
+file(INSTALL DESTINATION "/usr/local/lib" TYPE SHARED_LIBRARY FILES "/home/sensor/Desktop/coviduipy/libuvc/build/libuvc.so")
   if(EXISTS "$ENV{DESTDIR}/usr/local/lib/libuvc.so" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}/usr/local/lib/libuvc.so")
     if(CMAKE_INSTALL_DO_STRIP)
@@ -74,8 +74,8 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
 file(INSTALL DESTINATION "/usr/local/include/libuvc" TYPE FILE FILES
-    "/home/sensor/Desktop/libuvc/include/libuvc/libuvc.h"
-    "/home/sensor/Desktop/libuvc/build/include/libuvc/libuvc_config.h"
+    "/home/sensor/Desktop/coviduipy/libuvc/include/libuvc/libuvc.h"
+    "/home/sensor/Desktop/coviduipy/libuvc/build/include/libuvc/libuvc_config.h"
     )
 endif()
 
@@ -89,8 +89,8 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
 file(INSTALL DESTINATION "/usr/local/lib/cmake/libuvc" TYPE FILE FILES
-    "/home/sensor/Desktop/libuvc/build/CMakeFiles/libuvcConfig.cmake"
-    "/home/sensor/Desktop/libuvc/build/libuvcConfigVersion.cmake"
+    "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/libuvcConfig.cmake"
+    "/home/sensor/Desktop/coviduipy/libuvc/build/libuvcConfigVersion.cmake"
     )
 endif()
 
@@ -98,7 +98,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   if(EXISTS "$ENV{DESTDIR}/usr/local/lib/cmake/libuvc/libuvcTargets.cmake")
     file(DIFFERENT EXPORT_FILE_CHANGED FILES
          "$ENV{DESTDIR}/usr/local/lib/cmake/libuvc/libuvcTargets.cmake"
-         "/home/sensor/Desktop/libuvc/build/CMakeFiles/Export/_usr/local/lib/cmake/libuvc/libuvcTargets.cmake")
+         "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/Export/_usr/local/lib/cmake/libuvc/libuvcTargets.cmake")
     if(EXPORT_FILE_CHANGED)
       file(GLOB OLD_CONFIG_FILES "$ENV{DESTDIR}/usr/local/lib/cmake/libuvc/libuvcTargets-*.cmake")
       if(OLD_CONFIG_FILES)
@@ -115,7 +115,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/usr/local/lib/cmake/libuvc" TYPE FILE FILES "/home/sensor/Desktop/libuvc/build/CMakeFiles/Export/_usr/local/lib/cmake/libuvc/libuvcTargets.cmake")
+file(INSTALL DESTINATION "/usr/local/lib/cmake/libuvc" TYPE FILE FILES "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/Export/_usr/local/lib/cmake/libuvc/libuvcTargets.cmake")
   if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
     list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
      "/usr/local/lib/cmake/libuvc/libuvcTargets-release.cmake")
@@ -125,7 +125,7 @@ file(INSTALL DESTINATION "/usr/local/lib/cmake/libuvc" TYPE FILE FILES "/home/se
     if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
         message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
     endif()
-file(INSTALL DESTINATION "/usr/local/lib/cmake/libuvc" TYPE FILE FILES "/home/sensor/Desktop/libuvc/build/CMakeFiles/Export/_usr/local/lib/cmake/libuvc/libuvcTargets-release.cmake")
+file(INSTALL DESTINATION "/usr/local/lib/cmake/libuvc" TYPE FILE FILES "/home/sensor/Desktop/coviduipy/libuvc/build/CMakeFiles/Export/_usr/local/lib/cmake/libuvc/libuvcTargets-release.cmake")
   endif()
 endif()
 
@@ -137,5 +137,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/sensor/Desktop/libuvc/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/sensor/Desktop/coviduipy/libuvc/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
