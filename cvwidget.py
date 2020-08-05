@@ -231,7 +231,11 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data_clean)
 
         self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
+
+        time.sleep(2)
+
         cv2.imshow("thermal", image_data)
+        
         cv2.waitKey(1)
 
         self.temp[0]=round(self.ktof(maxVal),2)
