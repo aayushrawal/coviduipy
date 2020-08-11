@@ -635,6 +635,7 @@ class MainWindow(QWidget):
 
         self.startscanM = QtWidgets.QPushButton("Start Scan - Male")
         self.startscanF = QtWidgets.QPushButton("Start Scan - Female")
+        self.performFFC = QtWidgets.QPushButton("Perform FFC")
         self.startscanM.clicked.connect(self.RunScanM)
         self.startscanF.clicked.connect(self.RunScanF)
         self.controls = QtWidgets.QHBoxLayout()
