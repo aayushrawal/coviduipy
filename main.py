@@ -9,6 +9,7 @@ from cvwidget import MainWidget as FDWidget
 from cvfrwidget import MainWidget as FRWidget
 import pyqtgraph as pg
 import time
+import radardata
 
 ports = list(serial.tools.list_ports.comports())
 portconfig = False
@@ -25,15 +26,36 @@ if(not portconfig):
 class SerialThread(QtCore.QThread):
     change_value = QtCore.pyqtSignal(str)
     ser = serial.Serial(DefSerPort, 250000, timeout=0.1)
-    _break = False
+    _break = False    
+
+
     def run(self):
+
+        device_name = '/dev/ttyACM0'
+        record = False
+        x4m200 = radardata.configure_x4m200(device_name, record, radardata.x4m200_par_settings)
+        
+        
         while True:
             if self._break:
                 return
             time.sleep(0.001)
             self.ser.flush()
-            recv = self.ser.readline().decode("utf-8")
+
+            
+            radar_data = radardata.print_x4m200_messages(x4m200).split()
+
+            """ recv = self.ser.readline().decode("utf-8")
+            recv_RD = recv.split(",") """
+            recv_RD = ["X4M200","RPM","0","State","0x00","LD","0","MAX3266BPM","HR","85","C","0","Oxygen Levels","96", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
+            radar_data[1] = "12"
+            radar_data[5] = "10"
+            recv_RD[2] = str(int(float(radar_data[1])))
+            recv_RD[6] = str(int(float(radar_data[5])))
+            print(radar_data)
+            recv=",".join(recv_RD)
             print(recv)
+
             if(len(recv)>5):
                 self.change_value.emit(recv)
             else:
@@ -187,14 +209,6 @@ class HandleScan(QtCore.QThread):
 
                 elif(self.scanprogress == 3):
                     temptemp = self.tempval
-                    
-                    """ if(temptemp!=0):
-                        if (temptemp > 145):
-                            temptemp = temptemp - 48
-                        if (temptemp < 55):
-                            temptemp = temptemp + 48
-                        #if (temptemp < 95) or (temptemp > 100):
-                        #    temptemp = int(random.randrange(96, 99)) """
 
                     self.flirreading = max(temptemp, self.flirreading)
                 else:
@@ -546,16 +560,16 @@ class MainWindow(QWidget):
         div = 350
         if self.Platform == 1:
             
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=4)
+            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
+            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
         elif (self.Platform == 2):
             
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=4)
+            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
+            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
         else:
             
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=4)
+            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
+            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
 
         self.usermsg = QtWidgets.QLabel()
         self.usermsg.setText("Max Temperature: 0")
@@ -635,7 +649,6 @@ class MainWindow(QWidget):
 
         self.startscanM = QtWidgets.QPushButton("Start Scan - Male")
         self.startscanF = QtWidgets.QPushButton("Start Scan - Female")
-        self.performFFC = QtWidgets.QPushButton("Perform FFC")
         self.startscanM.clicked.connect(self.RunScanM)
         self.startscanF.clicked.connect(self.RunScanF)
         self.controls = QtWidgets.QHBoxLayout()
@@ -829,6 +842,17 @@ class MainWindow(QWidget):
 
         ttemp = self.fd.face_detection_widget.gettemp()[0]
         self.scanthread.updatetemp(ttemp)
+
+        """ device_name = '/dev/ttyACM0'
+        record = False
+        
+        self.lst = [] """
+        """ x4m200 = radardata.configure_x4m200(
+        device_name, record, radardata.x4m200_par_settings)
+        radar_data = radardata.print_x4m200_messages(x4m200)
+        self.lst.append(radar_data)
+        print(self.lst)
+        print(radar_data)  """
 
 def main():
     app = QApplication(sys.argv)
