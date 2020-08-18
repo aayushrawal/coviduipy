@@ -48,8 +48,8 @@ class SerialThread(QtCore.QThread):
             """ recv = self.ser.readline().decode("utf-8")
             recv_RD = recv.split(",") """
             recv_RD = ["X4M200","RPM","0","State","0x00","LD","0","MAX3266BPM","HR","85","C","0","Oxygen Levels","96", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
-            radar_data[1] = "12"
-            radar_data[5] = "10"
+            """ radar_data[1] = "12"
+            radar_data[5] = "10" """
             recv_RD[2] = str(int(float(radar_data[1])))
             recv_RD[6] = str(int(float(radar_data[5])))
             print(radar_data)
@@ -343,7 +343,9 @@ class HandleScan(QtCore.QThread):
                     if(self.GraphX[-1]>10):
                         self.startplotting = False
                         lc = 0
-                        ld = int(abs(max(self.GraphY, key=abs)))
+                        #ld = int(abs(max(self.GraphY[-10:], key=abs)))
+                        #ld = 7
+                        
                         if(self.scanmode == 0):
                             thrval = 7
                         else:
