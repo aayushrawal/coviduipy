@@ -162,16 +162,9 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         cv2.line(img, (x, y - 2), (x, y + 2), color, 1) 
 
     def image_data_slot(self, image_data):
-
-        
-
-
         image_data_clean = dc(image_data)
-
         
         image_data = self.raw_to_8bit(image_data)
-
-        
 
         scale_percent = 100 
         if(image_data.shape[0]>640):
@@ -231,8 +224,6 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data_clean)
 
         self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
-
-        time.sleep(2)
 
         cv2.imshow("thermal", image_data)
         

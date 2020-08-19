@@ -47,11 +47,11 @@ class SerialThread(QtCore.QThread):
 
             """ recv = self.ser.readline().decode("utf-8")
             recv_RD = recv.split(",") """
-            recv_RD = ["X4M200","RPM","0","State","0x00","LD","0","MAX3266BPM","HR","85","C","0","Oxygen Levels","96", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
+            recv_RD = ["X4M200","RPM","16","State","0x00","LD","8","MAX3266BPM","HR","85","C","0","Oxygen Levels","96", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
             """ radar_data[1] = "12"
             radar_data[5] = "10" """
-            recv_RD[2] = str(int(float(radar_data[1])))
-            recv_RD[6] = str(int(float(radar_data[5])))
+            """ recv_RD[2] = str(int(float(radar_data[1])))
+            recv_RD[6] = str(int(float(radar_data[5]))) """
             print(radar_data)
             recv=",".join(recv_RD)
             print(recv)
@@ -197,6 +197,8 @@ class HandleScan(QtCore.QThread):
                 self.tempHR = int(data[9])
                 self.tempOxyMeterV = int(data[13])
 
+                #self.tryLD = int(data[6])
+
                 if(self.startplotting):
                     tinst = int(float(data[6]))
                     if tinst!=0:
@@ -251,7 +253,7 @@ class HandleScan(QtCore.QThread):
                     self.GraphX = [0]
                     self.GraphY = [0]
                     self.InstructionssetText.emit("Starting Scan\nPlease Look Into The Screen")
-                    time.sleep(2)
+                    time.sleep(1)
                     self.scanprogress = 2
 
                     self.restraintrig.emit(1)
@@ -275,7 +277,7 @@ class HandleScan(QtCore.QThread):
                         return
                     elif (insttemp > 10) and (self.FinalReadings["temp"] == 0):
                         self.FinalReadings["temp"] = insttemp
-                        self.InstructionssetText.emit("Temprature Captured Succesfully  :" + str(insttemp) + "\nPlease stand Straight and stay still")
+                        self.InstructionssetText.emit("Temperature Captured Succesfully  :" + str(insttemp) + "\nPlease stand Straight and stay still")
                         self.usermsgsetText.emit("Max Temperature:" + str(insttemp))
                         time.sleep(1)
                         self.scanprogress = 4
@@ -343,8 +345,9 @@ class HandleScan(QtCore.QThread):
                     if(self.GraphX[-1]>10):
                         self.startplotting = False
                         lc = 0
-                        #ld = int(abs(max(self.GraphY[-10:], key=abs)))
+                        ld = int(abs(max(self.GraphY, key=abs)))
                         #ld = 7
+                        #ld = self.tryLD
                         
                         if(self.scanmode == 0):
                             thrval = 7
@@ -562,16 +565,16 @@ class MainWindow(QWidget):
         div = 350
         if self.Platform == 1:
             
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
+            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
+            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
         elif (self.Platform == 2):
             
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
+            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
+            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
         else:
             
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
+            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
+            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
 
         self.usermsg = QtWidgets.QLabel()
         self.usermsg.setText("Max Temperature: 0")

@@ -30,7 +30,7 @@ respiration_sensor_state_text = (
 x4m200_par_settings = {'detection_zone': (0.4, 2),
                        'sensitivity': 1,
                        'tx_center_frequency': 3, # 3: TX 7.29GHz low band center frequency, 4: TX 8.748GHz low band center frequency.
-                       'led_control': (XTID_LED_MODE_OFF, 0),
+                       'led_control': (XTID_LED_MODE_FULL, 0),
                        # initialize noisemap everytime when get start (approximately 120s)
                        'noisemap_control': 0b110,
                        # only uncomment the message when you need them to avoide confliction.
@@ -117,21 +117,16 @@ def print_x4m200_messages(x4m200):
         lst_data = []
         ctr = True
         while ctr == True:
+            """ while x4m200.peek_message_respiration_legacy(): # update every 1/17 second
+                rdata = x4m200.read_message_respiration_legacy() 
+                #return("frame_counter: {} sensor_state: {} respiration_rate: {} distance: {} Breath Pattern: {} signal_quality: {}" .format(rdata.frame_counter, rdata.sensor_state, rdata.respiration_rate, rdata.distance, rdata.movement, rdata.signal_quality))
+                return("respiration_rate: {} distance: {} Breath_Pattern: {}" .format(rdata.respiration_rate, rdata.distance, rdata.movement))
+             """
             while x4m200.peek_message_respiration_sleep(): # update every 1 second
                 rdata = x4m200.read_message_respiration_sleep() 
                 datavar="respiration_rate: {} movement_slow: {} movement_fast: {}".format(rdata.respiration_rate, rdata.movement_slow, rdata.movement_fast)
-                #datavar = [rdata.respiration_rate, rdata.movement_slow, rdata.movement_fast]
                 
                 return(datavar)
-                """ if(rdata.respiration_rate!=0):"""
-                """ lst_data.append(datavar)
-                if(count(lst_data)==10):
-                    ctr = False
-                    return(lst_data) """
-
-            """ while x4m200.peek_message_respiration_movinglist(): # update every 1 second
-                rdata = x4m200.read_message_respiration_movinglist() # update every 1 second
-                return("message_respiration_movinglist:\ncounter: {} \nmovement_slow_items: {} \nmovement_fast_items: {}\n".format(rdata.counter, np.array(rdata.movement_slow_items), np.array(rdata.movement_fast_items))) """
     except:
         return('Messages output finish!')
     #sys.exit(0)
@@ -153,10 +148,6 @@ def main():
     x4m200 = configure_x4m200(
         device_name, record, x4m200_par_settings)
 
-    """ else:
-        player = start_player(meta_filename=args.meta_filename)
-        mc = ModuleConnector(player, log_level=0)
-        x4m200 = mc.get_x4m200() """
     print(print_x4m200_messages(x4m200))
 
 
