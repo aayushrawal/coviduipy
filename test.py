@@ -27,7 +27,7 @@ class MainWindow(QWidget):
         self.hbox.addLayout(self.GraphicsWindow)
         self.setLayout(self.hbox)
         self.setMinimumSize(500,500)
-        self.setWindowTitle('Dashboard')
+        self.setWindowTitle('Test')
         self.show()
 
     def paintEvent(self, e):
@@ -46,7 +46,6 @@ def main():
     ex = MainWindow()
     ex.show()
     sys.exit(app.exec_())
-    sys.exit(app.scanthread.StopSerialThread())
 
 if __name__ == '__main__':
     main()
