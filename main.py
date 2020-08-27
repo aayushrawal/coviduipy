@@ -11,14 +11,8 @@ from cvfrwidget import MainWidget as FRWidget
 import pyqtgraph as pg
 import time
 import radardata
-import numpy as np
-import cv2
-from uvctypes import *
-try:
-  from queue import Queue
-except ImportError:
-  from Queue import Queue
-import platform
+
+
 
 
 class SerialThread(QtCore.QThread):
@@ -583,7 +577,7 @@ class MainWindow(QWidget):
         self.div = 350
 
             
-        self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed=0)
+        self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video0")
         self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video2")
 
 
@@ -615,12 +609,15 @@ class MainWindow(QWidget):
         self.messagepanellayout.addWidget(self.fr_id)
         self.messagepanellayout.addSpacerItem(QtWidgets.QSpacerItem(250, 100, QtWidgets.QSizePolicy.Expanding))
 
+        
+
         self.CVPanel = QHBoxLayout()
         self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
         self.CVPanel.addWidget(self.fd)
         self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(45,100,QtWidgets.QSizePolicy.MinimumExpanding))
         self.CVPanel.addLayout(self.messagepanellayout)
         self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
+
 
         self.CVPanelHeading = QHBoxLayout()
         self.H1 = QtWidgets.QLabel()
@@ -856,7 +853,7 @@ class MainWindow(QWidget):
         self.graphWidget.clear()
         self.graphWidget.plot(self.GraphX, self.GraphY)
 
-        self.ttemp = self.fd.face_detection_widget.gettemp()[0]
+        self.ttemp = self.fd.face_detection_widget.gettemp()
         self.scanthread.updatetemp(self.ttemp)
 
 def main():
@@ -865,6 +862,8 @@ def main():
     ex.show()
     sys.exit(app.exec_())
     sys.exit(app.scanthread.StopSerialThread())
+    
+
 
 if __name__ == '__main__':
     main()

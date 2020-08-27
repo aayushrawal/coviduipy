@@ -1,5 +1,5 @@
 [Desktop Entry]
-Exec=sudo python3 /home/sensor/Desktop/coviduipy/main.py
+Exec=gksu python3 /home/sensor/Desktop/coviduipy/main.py
 Type=Application
 Terminal=true
 Icon=/home/sensor/Desktop/coviduipy/coronavirus.png

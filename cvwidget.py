@@ -100,7 +100,7 @@ class RecordVideo(QtCore.QObject):
 
 
                         data = cv2.resize(data[:,:], (640, 480))                       
-                        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
+                        #minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
                        
 
                         if data.any():
@@ -131,7 +131,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         self._width = 2
         self._min_size = (30, 30)
         self.vsc = scale
-        self.temp = [0, 0, 0, 0]
+        self.temp = 0
 
     def detect_faces(self, image: np.ndarray):
         # haarclassifiers work better in black and white
@@ -235,10 +235,13 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
         cv2.waitKey(1)
         
-        self.temp[0]=round(self.ktof(maxVal),2)
+        self.temp = round(self.ktof(maxVal),2)
 
         image_data = cv2.resize(image_data,(int(320*self.vsc),int(240*self.vsc)),interpolation=cv2.INTER_AREA)
+
+
         self.image = self.get_qimage(image_data)
+        
 
         if self.image.size() != self.size():
             self.setFixedSize(self.image.size())
@@ -279,7 +282,7 @@ class MainWidget(QtWidgets.QWidget):
 
         
         self.record_video = RecordVideo(feed)
-        print(self.record_video)
+        #print(self.record_video)
         image_data_slot = self.face_detection_widget.image_data_slot
         self.record_video.image_data.connect(image_data_slot)
 
