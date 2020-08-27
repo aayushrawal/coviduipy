@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 from os import path
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -10,51 +11,266 @@ from cvfrwidget import MainWidget as FRWidget
 import pyqtgraph as pg
 import time
 import radardata
+import numpy as np
+import cv2
+from uvctypes import *
+try:
+  from queue import Queue
+except ImportError:
+  from Queue import Queue
+import platform
 
-ports = list(serial.tools.list_ports.comports())
-portconfig = False
-for p in ports:
-    if(("Arduino" in p.description) or ("ACM" in p.description)):
-        print("Found Bridge at "+p.device)
-        DefSerPort = p.device
-        portconfig = True
+########## cvwidget.py
+""" 
+class RecordVideo(QtCore.QObject):
+    image_data = QtCore.pyqtSignal(np.ndarray)
+    BUF_SIZE = 2
 
-if(not portconfig):
-    print("No Bridge Found, Exiting...")
-    sys.exit()
+    def __init__(self, camera_port=0, parent=None):
+        super().__init__(parent)
+        self.stop = False
+        self.timer = QtCore.QBasicTimer()
+        self.q = Queue(self.BUF_SIZE)
+        self.PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(self.py_frame_callback)
+
+
+    def py_frame_callback(self,frame, userptr):
+
+        array_pointer = cast(frame.contents.data, POINTER(c_uint16 * (frame.contents.width * frame.contents.height)))
+        data = np.frombuffer(array_pointer.contents, dtype=np.dtype(np.uint16)).reshape(frame.contents.height, frame.contents.width)
+
+        if frame.contents.data_bytes != (2 * frame.contents.width * frame.contents.height):
+            return
+
+        if not self.q.full():
+            self.q.put(data)
+
+    def start_recording(self):
+        self.timer.start(0, self)
+
+    def timerEvent(self, event):
+        if (event.timerId() != self.timer.timerId()):
+            return
+        if self.stop:
+            return
+        
+        ctx = POINTER(uvc_context)()
+        dev = POINTER(uvc_device)()
+        devh = POINTER(uvc_device_handle)()
+        ctrl = uvc_stream_ctrl()
+
+        res = libuvc.uvc_init(byref(ctx), 0)
+        if res < 0:
+            print("uvc_init error")
+            exit(1)
+        else:print("uvc_init worked")
+        try:
+            res = libuvc.uvc_find_device(ctx, byref(dev), PT_USB_VID, PT_USB_PID, 0)
+            if res < 0:
+                print("uvc_find_device error")
+                exit(1)
+            else:print("uvc_find_device worked")
+            try:
+                res = libuvc.uvc_open(dev, byref(devh))
+                if res < 0:
+                    print("uvc_open error")
+                    exit(1)
+                else:print("uvc_open worked")
+                print("device opened!")
+
+                print_device_info(devh)
+                print_device_formats(devh)
+
+                frame_formats = uvc_get_frame_formats_by_guid(devh, VS_FMT_GUID_Y16)
+                if len(frame_formats) == 0:
+                    print("device does not support Y16")
+                    exit(1)
+                else:print("uvc_get_frame_formats worked")
+
+                libuvc.uvc_get_stream_ctrl_format_size(devh, byref(ctrl), UVC_FRAME_FORMAT_Y16,
+                    frame_formats[0].wWidth, frame_formats[0].wHeight, int(1e7 / frame_formats[0].dwDefaultFrameInterval)
+                )
+
+                res = libuvc.uvc_start_streaming(devh, byref(ctrl), self.PTR_PY_FRAME_CALLBACK, None, 0)
+                if res < 0:
+                    print("uvc_start_streaming failed: {0}".format(res))
+                    exit(1) 
+                else:print("uvc_start_streaming worked")
+
+                try:
+                    while True:
+                        data = self.q.get(True, 500)
+                        read = data
+                        if data is None:
+                            break
+
+
+                        data = cv2.resize(data[:,:], (640, 480))                       
+                        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
+                       
+
+                        if data.any():
+                            self.image_data.emit(data)
+                            
+                            
+
+                finally:
+                    libuvc.uvc_stop_streaming(devh)
+
+                print("done")
+
+            finally:
+                libuvc.uvc_unref_device(dev)
+        finally:
+            libuvc.uvc_exit(ctx)
+
+
+class FaceDetectionWidget(QtWidgets.QWidget):
+    def __init__(self, haar_cascade_filepath, parent=None, scale=1.3):
+        super().__init__(parent)
+        self.classifier = cv2.CascadeClassifier(haar_cascade_filepath)
+        self.image = QtGui.QImage()
+        self._red = (0, 0, 255)
+        self._green = (0, 255, 0)
+        self._orange = (0, 20, 155)
+        self._width = 2
+        self._min_size = (30, 30)
+        self.vsc = scale
+        self.temp = [0, 0, 0, 0]
+
+    def detect_faces(self, image: np.ndarray):
+        # haarclassifiers work better in black and white
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray_image = cv2.equalizeHist(gray_image)
+
+        faces = self.classifier.detectMultiScale(gray_image,
+                                                 scaleFactor=1.3,
+                                                 minNeighbors=4,
+                                                 flags=cv2.CASCADE_SCALE_IMAGE,
+                                                 minSize=self._min_size)
+        return faces
+
+    def ktof(self, val):
+        return (1.8 * self.ktoc(val) + 32.0)
+
+    def ktoc(self, val):
+        return (val - 27315) / 100.0
+
+    def raw_to_8bit(self, data):
+        cv2.normalize(data, data, 0, 65535, cv2.NORM_MINMAX)
+        np.right_shift(data, 8, data)
+        return cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2RGB)
+
+    def display_temperature(self, img, val_k, loc, color):
+        val = self.ktof(val_k)
+        cv2.putText(img, "{0:.1f} degF".format(val), loc, cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2)
+        x, y = loc
+        cv2.line(img, (x - 2, y), (x + 2, y), color, 1)
+        cv2.line(img, (x, y - 2), (x, y + 2), color, 1) 
+
+    def image_data_slot(self, image_data):
+        
+        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data)
+        
+        image_data = self.raw_to_8bit(image_data)
+
+
+        self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
+
+
+        cv2.imshow("thermal", image_data)
+
+        cv2.waitKey(1)
+        
+        self.temp[0]=round(self.ktof(maxVal),2)
+
+        image_data = cv2.resize(image_data,(int(320*self.vsc),int(240*self.vsc)),interpolation=cv2.INTER_AREA)
+        self.image = self.get_qimage(image_data)
+
+        if self.image.size() != self.size():
+            self.setFixedSize(self.image.size())
+        
+        self.update()
+
+
+    def gettemp(self):
+        return(self.temp)
+
+    def get_qimage(self, image: np.ndarray):
+        height, width, colors = image.shape
+        bytesPerLine = 3 * width
+        QImage = QtGui.QImage
+
+        image = QImage(image.data,
+                       width,
+                       height,
+                       bytesPerLine,
+                       QImage.Format_RGB888)
+
+        image = image.rgbSwapped()
+        return image
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.drawImage(0, 0, self.image)
+        self.image = QtGui.QImage()
+
+
+class MainWidget(QtWidgets.QWidget):
+    def __init__(self, haarcascade_filepath, parent=None, scale=1.3, feed=0):
+        super().__init__(parent)
+        fp = haarcascade_filepath
+        self.face_detection_widget = FaceDetectionWidget(fp,scale=scale)
+
+        self.face_detection_widget.vsc = scale
+
+        
+        self.record_video = RecordVideo(feed)
+        print(self.record_video)
+        image_data_slot = self.face_detection_widget.image_data_slot
+        self.record_video.image_data.connect(image_data_slot)
+
+        layout = QtWidgets.QVBoxLayout()
+
+        layout.addWidget(self.face_detection_widget)
+
+        
+        self.record_video.start_recording()
+        self.setLayout(layout) """
+##########
 
 class SerialThread(QtCore.QThread):
     change_value = QtCore.pyqtSignal(str)
-    ser = serial.Serial(DefSerPort, 250000, timeout=0.1)
+    #ser = serial.Serial(DefSerPort, 250000, timeout=0.1)
     _break = False    
 
 
     def run(self):
 
-        device_name = '/dev/ttyACM0'
+        """ device_name = '/dev/ttyACM0'
         record = False
-        x4m200 = radardata.configure_x4m200(device_name, record, radardata.x4m200_par_settings)
+        x4m200 = radardata.configure_x4m200(device_name, record, radardata.x4m200_par_settings) """
         
         
         while True:
             if self._break:
                 return
-            time.sleep(0.001)
-            self.ser.flush()
 
             
-            radar_data = radardata.print_x4m200_messages(x4m200).split()
+            #radar_data = radardata.print_x4m200_messages(x4m200).split()
 
             """ recv = self.ser.readline().decode("utf-8")
             recv_RD = recv.split(",") """
-            recv_RD = ["X4M200","RPM","16","State","0x00","LD","8","MAX3266BPM","HR","85","C","0","Oxygen Levels","96", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
+            recv_RD = ["X4M200","RPM","12","State","0x00","LD","10","MAX3266BPM","HR","85","C","0","Oxygen Levels","96", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
             """ radar_data[1] = "12"
-            radar_data[5] = "10" """
-            """ recv_RD[2] = str(int(float(radar_data[1])))
-            recv_RD[6] = str(int(float(radar_data[5]))) """
-            print(radar_data)
+            radar_data[5] = "10"
+            recv_RD[2] = str(int(float(radar_data[1])))
+            recv_RD[6] = str(int(float(radar_data[5])))
+            print(radar_data) """
             recv=",".join(recv_RD)
-            print(recv)
+            #print(recv)
+            print(" ")
+
 
             if(len(recv)>5):
                 self.change_value.emit(recv)
@@ -131,8 +347,8 @@ class HandleScan(QtCore.QThread):
 
 
     def setGaugeParams(self,g1_nmin, g1_nmax,g2_nmin, g2_nmax,g3_nmin, g3_nmax,g4_nmin, g4_nmax):
-        self._gauge1_normalMinValue =g1_nmin
-        self._gauge1_normalMaxValue =g1_nmax
+        self._gauge1_normalMinValue = g1_nmin
+        self._gauge1_normalMaxValue = g1_nmax
         self._gauge2_normalMinValue = g2_nmin
         self._gauge2_normalMaxValue = g2_nmax
         self._gauge3_normalMinValue = g3_nmin
@@ -149,6 +365,11 @@ class HandleScan(QtCore.QThread):
         self.graphWidgetclear.emit(1)
         self.GraphY = [0]
         self.GraphX = [0]
+
+        """  device_name = '/dev/ttyACM0'
+        record = False
+        x4m200 = radardata.configure_x4m200(device_name, record, radardata.x4m200_par_settings) """
+        
         self.triggraphupdate()
         self.StartScan = startscan
         self.scanmode = scanmode
@@ -177,6 +398,17 @@ class HandleScan(QtCore.QThread):
         self.thread = SerialThread()
         self.thread.change_value.connect(self.setgaugevalues)
         self.thread.start()
+
+    def ResetSerialThread(self):
+        self.thread.change_value.disconnect(self.setgaugevalues)
+        self.thread.stopthread()
+        """ device_name = '/dev/ttyACM0'
+        record = False
+        x4m200 = radardata.configure_x4m200(device_name, record, radardata.x4m200_par_settings)
+         """
+        self.thread = SerialThread()
+        self.thread.change_value.connect(self.setgaugevalues)
+        self.thread.start
 
     def StopSerialThread(self):
         self.thread.stopthread()
@@ -207,7 +439,7 @@ class HandleScan(QtCore.QThread):
                     if self.zerotrigger == True:
                         self.GraphY.append(tinst)
                         self.GraphX.append(self.GraphX[-1] + 1)
-                        self.triggraphupdate()
+                        self.triggraphupdate() #stopped graph plotting for testing
 
                 elif(self.scanprogress == 3):
                     temptemp = self.tempval
@@ -270,21 +502,21 @@ class HandleScan(QtCore.QThread):
                     self.scanprogress = 3
 
                 if self.scanprogress == 3:
-                    insttemp = self.tempval
-                    if insttemp == 0:
+                    self.insttemp = self.tempval
+                    if self.insttemp == 0:
                         self.InstructionssetText.emit("Error Finding Face\nPlease Look Straight and Retry Again")
                         time.sleep(0.5)
                         return
-                    elif (insttemp > 10) and (self.FinalReadings["temp"] == 0):
-                        self.FinalReadings["temp"] = insttemp
-                        self.InstructionssetText.emit("Temperature Captured Succesfully  :" + str(insttemp) + "\nPlease stand Straight and stay still")
-                        self.usermsgsetText.emit("Max Temperature:" + str(insttemp))
+                    elif (self.insttemp > 10) and (self.FinalReadings["temp"] == 0):
+                        self.FinalReadings["temp"] = self.insttemp
+                        self.InstructionssetText.emit("Temperature Captured Succesfully  :" + str(self.insttemp) + "\nPlease stand Straight and stay still")
+                        self.usermsgsetText.emit("Max Temperature:" + str(self.insttemp))
                         time.sleep(1)
                         self.scanprogress = 4
 
                 if self.scanprogress == 4:
                     self.InstructionssetText.emit("Please Stand Still")
-                    time.sleep(1)
+                    #time.sleep(1) #Removed to lower time till breathing pattern
                     self.scanprogress = 5
 
                 if self.scanprogress == 5:
@@ -296,7 +528,7 @@ class HandleScan(QtCore.QThread):
                         self.FinalReadings["rpm"] = self.tempRPM
                         self.InstructionssetText.emit("RPM Captured Succesfully")
                         self._gauge3value.emit(self.tempRPM)
-                        time.sleep(1)
+                        #time.sleep(1) #Removed to lower time till breathing pattern
                         self.scanprogress = 10
                         self.InstructionssetText.emit("Resetting Graphs")
                         self.graphWidgetclear.emit(1)
@@ -341,14 +573,16 @@ class HandleScan(QtCore.QThread):
 
                 if(self.scanprogress == 10):
                     self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
-                    self.startplotting = True
+                    self.startplotting = True ##Graph plot stopped for test
                     if(self.GraphX[-1]>10):
                         self.startplotting = False
                         lc = 0
                         ld = int(abs(max(self.GraphY, key=abs)))
                         #ld = 7
                         #ld = self.tryLD
-                        
+                        """ print("+++++")
+                        print("Last Breathing Pattern Value:",self.GraphY)
+                        print("-----") """
                         if(self.scanmode == 0):
                             thrval = 7
                         else:
@@ -402,6 +636,8 @@ class HandleScan(QtCore.QThread):
                     self.flirreading = 0
                     self.GraphX = [0]
                     self.GraphY = [0]
+
+                    
             else:
                 time.sleep(0.5)
                 continue
@@ -536,10 +772,10 @@ class MainWindow(QWidget):
         self.vbox.addWidget(self.label4)
         self.vbox.addWidget(self._gauge4, 1)
         self.vbox.addStretch()
-        vrect = QtCore.QRect(0, 0, (self.geometry().height() * self.dividerRatio), self.geometry().height())
-        self.vbox.setGeometry(vrect)
+        self.vrect = QtCore.QRect(0, 0, (self.geometry().height() * self.dividerRatio), self.geometry().height())
+        self.vbox.setGeometry(self.vrect)
 
-        GraphicsWindow = QVBoxLayout()
+        self.GraphicsWindow = QVBoxLayout()
         #GraphicsWindow.addStretch()
         #vrectGW = QtCore.QRect((self.geometry().width()*0.3), 0, (self.geometry().width()*1.5), self.geometry().height())
         #GraphicsWindow.setGeometry(vrectGW);
@@ -562,19 +798,12 @@ class MainWindow(QWidget):
         cascade_filepath = path.join(script_dir, 'haarcascade_frontalface_default.xml')
         cascade_filepath = path.abspath(cascade_filepath)
 
-        div = 350
-        if self.Platform == 1:
+        self.div = 350
+
             
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
-        elif (self.Platform == 2):
-            
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
-        else:
-            
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=1)
+        self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed=0)
+        self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed=2)
+
 
         self.usermsg = QtWidgets.QLabel()
         self.usermsg.setText("Max Temperature: 0")
@@ -604,40 +833,40 @@ class MainWindow(QWidget):
         self.messagepanellayout.addWidget(self.fr_id)
         self.messagepanellayout.addSpacerItem(QtWidgets.QSpacerItem(250, 100, QtWidgets.QSizePolicy.Expanding))
 
-        CVPanel = QHBoxLayout()
-        CVPanel.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
-        CVPanel.addWidget(self.fd)
-        CVPanel.addSpacerItem(QtWidgets.QSpacerItem(45,100,QtWidgets.QSizePolicy.MinimumExpanding))
-        CVPanel.addLayout(self.messagepanellayout)
-        CVPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
+        self.CVPanel = QHBoxLayout()
+        self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
+        self.CVPanel.addWidget(self.fd)
+        self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(45,100,QtWidgets.QSizePolicy.MinimumExpanding))
+        self.CVPanel.addLayout(self.messagepanellayout)
+        self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
 
-        CVPanelHeading = QHBoxLayout()
+        self.CVPanelHeading = QHBoxLayout()
         self.H1 = QtWidgets.QLabel()
         self.H1.setText("Thermal Feed")
         self.H1.setStyleSheet("color: white; padding-bottom:10px; text-align: center;")
         self.H2 = QtWidgets.QLabel()
         self.H2.setText("Info Panel")
         self.H2.setStyleSheet("color: white; padding-bottom:10px; text-align: center;")
-        CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
-        CVPanelHeading.addWidget(self.H1)
-        CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
-        CVPanelHeading.addWidget(self.H2)
-        CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
+        self.CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
+        self.CVPanelHeading.addWidget(self.H1)
+        self.CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
+        self.CVPanelHeading.addWidget(self.H2)
+        self.CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
 
-        InfoPanelLabels = QHBoxLayout()
+        self.InfoPanelLabels = QHBoxLayout()
         self.i1 = QtWidgets.QLabel()
         self.i1.setText("Face Recognition")
         self.i1.setStyleSheet("color: white; padding-bottom:10px; text-align: center;")
         self.i2 = QtWidgets.QLabel()
         self.i2.setText("Lungs Displacement")
         self.i2.setStyleSheet("color: white; padding-bottom:10px; text-align: center;")
-        InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
-        InfoPanelLabels.addWidget(self.i1)
-        InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
-        InfoPanelLabels.addWidget(self.i2)
-        InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
+        self.InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
+        self.InfoPanelLabels.addWidget(self.i1)
+        self.InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
+        self.InfoPanelLabels.addWidget(self.i2)
+        self.InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
 
-        InfoPanel = QHBoxLayout()
+        self.InfoPanel = QHBoxLayout()
         self.graphWidget = pg.PlotWidget()
         self.GraphY = [0,0]
         self.GraphX = [0,0]
@@ -645,11 +874,11 @@ class MainWindow(QWidget):
         self.GraphBorder = QtWidgets.QVBoxLayout()
         self.GraphBorder.addWidget(self.graphWidget)
 
-        InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
-        InfoPanel.addWidget(self.fr)
-        InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
-        InfoPanel.addLayout(self.GraphBorder)
-        InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
+        self.InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
+        self.InfoPanel.addWidget(self.fr)
+        self.InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
+        self.InfoPanel.addLayout(self.GraphBorder)
+        self.InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
         #InfoPanel.setAlignment(QtCore.Qt.AlignRight)
 
         self.startscanM = QtWidgets.QPushButton("Start Scan - Male")
@@ -663,16 +892,16 @@ class MainWindow(QWidget):
         self.controls.addWidget(self.startscanF)
         self.controls.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
 
-        GraphicsWindow.addLayout(CVPanelHeading)
-        GraphicsWindow.addLayout(CVPanel)
-        GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250, 40, QtWidgets.QSizePolicy.Maximum))
-        GraphicsWindow.addLayout(InfoPanelLabels)
-        GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250,60, QtWidgets.QSizePolicy.Minimum))
-        GraphicsWindow.addLayout(InfoPanel)
-        GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250, 40, QtWidgets.QSizePolicy.Maximum))
-        GraphicsWindow.addLayout(self.controls)
-        GraphicsWindow.addStretch()
-        GraphicsWindow.addLayout(self._debugWindow)
+        self.GraphicsWindow.addLayout(self.CVPanelHeading)
+        self.GraphicsWindow.addLayout(self.CVPanel)
+        self.GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250, 40, QtWidgets.QSizePolicy.Maximum))
+        self.GraphicsWindow.addLayout(self.InfoPanelLabels)
+        self.GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250,60, QtWidgets.QSizePolicy.Minimum))
+        self.GraphicsWindow.addLayout(self.InfoPanel)
+        self.GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250, 40, QtWidgets.QSizePolicy.Maximum))
+        self.GraphicsWindow.addLayout(self.controls)
+        self.GraphicsWindow.addStretch()
+        self.GraphicsWindow.addLayout(self._debugWindow)
 
         self._gauge1.value = self.gtv
         self._gauge2.value = self.gtv
@@ -680,14 +909,14 @@ class MainWindow(QWidget):
         self._gauge4.value = self.gtv
 
 
-        hbox = QHBoxLayout()
-        hbox.setContentsMargins(self.geometry().height() * 0.1, 10, 10, 10)
-        hbox.addLayout(self.vbox)
-        hbox.addStretch()
-        hbox.addLayout(GraphicsWindow)
+        self.hbox = QHBoxLayout()
+        self.hbox.setContentsMargins(self.geometry().height() * 0.1, 10, 10, 10)
+        self.hbox.addLayout(self.vbox)
+        self.hbox.addStretch()
+        self.hbox.addLayout(self.GraphicsWindow)
 
 
-        self.setLayout(hbox)
+        self.setLayout(self.hbox)
 
         #painter = QtGui.QPainter(self)
 
@@ -789,33 +1018,33 @@ class MainWindow(QWidget):
 
         painter = QtGui.QPainter(self)
 
-        brush = QtGui.QBrush()
+        self.brush = QtGui.QBrush()
 
-        brush.setColor(QtGui.QColor('#242a30'))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        rect = QtCore.QRect(0, 0, painter.device().height() * self.dividerRatio, painter.device().height())
-        painter.fillRect(rect, brush)
+        self.brush.setColor(QtGui.QColor('#242a30'))
+        self.brush.setStyle(QtCore.Qt.SolidPattern)
+        self.rect = QtCore.QRect(0, 0, painter.device().height() * self.dividerRatio, painter.device().height())
+        painter.fillRect(self.rect, self.brush)
 
-        brush.setColor(QtGui.QColor('#363a42'))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        rect = QtCore.QRect(painter.device().height()*self.dividerRatio, 0, painter.device().width(), painter.device().height())
-        painter.fillRect(rect, brush)
+        self.brush.setColor(QtGui.QColor('#363a42'))
+        self.brush.setStyle(QtCore.Qt.SolidPattern)
+        self.rect = QtCore.QRect(painter.device().height()*self.dividerRatio, 0, painter.device().width(), painter.device().height())
+        painter.fillRect(self.rect, self.brush)
         #self.debugWindow.adjustSize()
 
-        myfont = QtGui.QFont()
-        myfont.setPixelSize(painter.device().height() * 0.032)
+        self.myfont = QtGui.QFont()
+        self.myfont.setPixelSize(painter.device().height() * 0.032)
         dw = painter.device().height() * 0.022
         sclabelfont = QtGui.QFont('Arial',(painter.device().height() * 0.012))
         sclabelfontH = QtGui.QFont('Arial',(painter.device().height() * 0.016))
         sclabelfontH1 = QtGui.QFont('Arial',(painter.device().height() * 0.016))
-        vrecti = QtCore.QRect(0, 0, (painter.device().height() * 0.29), painter.device().height())
+        self.vrecti = QtCore.QRect(0, 0, (painter.device().height() * 0.29), painter.device().height())
 
         self.vbox.setContentsMargins(painter.device().height() * 0.06, 10, 10, 10)  # Centers Gauges
-        self.vbox.setGeometry(vrecti)
-        self._gauge1.textFont = myfont
-        self._gauge2.textFont = myfont
-        self._gauge3.textFont = myfont
-        self._gauge4.textFont = myfont
+        self.vbox.setGeometry(self.vrecti)
+        self._gauge1.textFont = self.myfont
+        self._gauge2.textFont = self.myfont
+        self._gauge3.textFont = self.myfont
+        self._gauge4.textFont = self.myfont
         self._gauge1.dialWidth = dw
         self._gauge2.dialWidth = dw
         self._gauge3.dialWidth = dw
@@ -845,23 +1074,13 @@ class MainWindow(QWidget):
         self.graphWidget.clear()
         self.graphWidget.plot(self.GraphX, self.GraphY)
 
-        ttemp = self.fd.face_detection_widget.gettemp()[0]
-        self.scanthread.updatetemp(ttemp)
-
-        """ device_name = '/dev/ttyACM0'
-        record = False
-        
-        self.lst = [] """
-        """ x4m200 = radardata.configure_x4m200(
-        device_name, record, radardata.x4m200_par_settings)
-        radar_data = radardata.print_x4m200_messages(x4m200)
-        self.lst.append(radar_data)
-        print(self.lst)
-        print(radar_data)  """
+        self.ttemp = self.fd.face_detection_widget.gettemp()[0]
+        self.scanthread.updatetemp(self.ttemp)
 
 def main():
     app = QApplication(sys.argv)
     ex = MainWindow()
+    ex.show()
     sys.exit(app.exec_())
     sys.exit(app.scanthread.StopSerialThread())
 

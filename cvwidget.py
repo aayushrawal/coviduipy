@@ -15,7 +15,6 @@ try:
 except ImportError:
   from Queue import Queue
 import platform
-from copy import deepcopy as dc
 
 class RecordVideo(QtCore.QObject):
     image_data = QtCore.pyqtSignal(np.ndarray)
@@ -98,12 +97,15 @@ class RecordVideo(QtCore.QObject):
                         read = data
                         if data is None:
                             break
-                        
-                        data = cv2.resize(data[:,:], (640, 480))
+
+
+                        data = cv2.resize(data[:,:], (640, 480))                       
                         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
+                       
 
                         if data.any():
                             self.image_data.emit(data)
+
                             
                             
 
@@ -162,11 +164,13 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         cv2.line(img, (x, y - 2), (x, y + 2), color, 1) 
 
     def image_data_slot(self, image_data):
-        image_data_clean = dc(image_data)
+        
+        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data)
         
         image_data = self.raw_to_8bit(image_data)
 
-        scale_percent = 100 
+
+        """ scale_percent = 100 
         if(image_data.shape[0]>640):
             if(image_data.shape[0]>4000):
                 scale_percent = 5
@@ -185,7 +189,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         dsize = (width, height)
 
         # resize image
-        image_data = cv2.resize(image_data, dsize)
+        image_data = cv2.resize(image_data, dsize) """
 
         
 
@@ -206,6 +210,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
             try:
                 
                 face_roi = image_data[x: int(x+w), y: int(y+h)]
+
                 face_roi_clean = image_data_clean[x: int(x+w), y: int(y+h)]
 
                 minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data_clean)
@@ -221,14 +226,15 @@ class FaceDetectionWidget(QtWidgets.QWidget):
             except(ValueError):
                 pass """
 
-        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data_clean)
+        
 
         self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
 
-        cv2.imshow("thermal", image_data)
-        
-        cv2.waitKey(1)
 
+        cv2.imshow("thermal", image_data)
+
+        cv2.waitKey(1)
+        
         self.temp[0]=round(self.ktof(maxVal),2)
 
         image_data = cv2.resize(image_data,(int(320*self.vsc),int(240*self.vsc)),interpolation=cv2.INTER_AREA)
@@ -236,6 +242,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
         if self.image.size() != self.size():
             self.setFixedSize(self.image.size())
+        
         self.update()
 
 

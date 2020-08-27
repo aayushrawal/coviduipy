@@ -4,6 +4,8 @@ from __future__ import print_function, division
 import sys
 from argparse import ArgumentParser
 
+import time
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -114,19 +116,24 @@ def configure_x4m200(device_name, record=False, x4m200_settings=x4m200_par_setti
 
 def print_x4m200_messages(x4m200):
     try:
-        lst_data = []
+        
         ctr = True
         while ctr == True:
-            """ while x4m200.peek_message_respiration_legacy(): # update every 1/17 second
+            while x4m200.peek_message_respiration_legacy(): # update every 1/17 second
                 rdata = x4m200.read_message_respiration_legacy() 
+                """ print(rdata.sensor_state)
+                x4m200 = configure_x4m200(
+        '/dev/ttyACM0', False, x4m200_par_settings)
                 #return("frame_counter: {} sensor_state: {} respiration_rate: {} distance: {} Breath Pattern: {} signal_quality: {}" .format(rdata.frame_counter, rdata.sensor_state, rdata.respiration_rate, rdata.distance, rdata.movement, rdata.signal_quality))
-                return("respiration_rate: {} distance: {} Breath_Pattern: {}" .format(rdata.respiration_rate, rdata.distance, rdata.movement))
-             """
-            while x4m200.peek_message_respiration_sleep(): # update every 1 second
-                rdata = x4m200.read_message_respiration_sleep() 
-                datavar="respiration_rate: {} movement_slow: {} movement_fast: {}".format(rdata.respiration_rate, rdata.movement_slow, rdata.movement_fast)
                 
-                return(datavar)
+                rdata = x4m200.read_message_respiration_legacy()  """
+                
+                return("respiration_rate: {} distance: {} Breath_Pattern: {}" .format(rdata.respiration_rate, rdata.distance, rdata.movement))
+            
+            """ while x4m200.peek_message_respiration_sleep(): # update every 1 second
+                rdata = x4m200.read_message_respiration_sleep() 
+                return("respiration_rate: {} movement_slow: {} movement_fast: {}".format(rdata.respiration_rate, rdata.movement_slow, rdata.movement_fast)) """
+
     except:
         return('Messages output finish!')
     #sys.exit(0)

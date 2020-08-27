@@ -18,7 +18,7 @@ from pymoduleconnector import RecordingOptions
 from pymoduleconnector.extras.auto import auto
 from pymoduleconnector.ids import *
 
-from xt_modules_print_info import print_module_info
+#from xt_modules_print_info import print_module_info
 from xt_modules_print_info import print_sensor_settings
 from xt_modules_record_playback_messages import start_recorder
 from xt_modules_record_playback_messages import start_player
@@ -30,7 +30,7 @@ respiration_sensor_state_text = (
 x4m200_par_settings = {'detection_zone': (0.4, 2),
                        'sensitivity': 1,
                        'tx_center_frequency': 3, # 3: TX 7.29GHz low band center frequency, 4: TX 8.748GHz low band center frequency.
-                       'led_control': (XTID_LED_MODE_OFF, 0),
+                       'led_control': (XTID_LED_MODE_FULL, 0),
                        # initialize noisemap everytime when get start (approximately 120s)
                        'noisemap_control': 0b110,
                        # only uncomment the message when you need them to avoide confliction.
@@ -114,61 +114,37 @@ def configure_x4m200(device_name, record=False, x4m200_settings=x4m200_par_setti
 
 def print_x4m200_messages(x4m200):
     try:
-        while True:
-            while x4m200.peek_message_respiration_sleep(): # update every 1 second
-                rdata = x4m200.read_message_respiration_sleep()  
-                print("message_respiration_sleep: frame_counter: {} sensor_state: {} respiration_rate: {} distance: {} movement_slow: {} movement_fast: {}".format(rdata.frame_counter, respiration_sensor_state_text[rdata.sensor_state], rdata.respiration_rate, rdata.distance, rdata.movement_slow, rdata.movement_fast))
+        lst_data = []
+        ctr = True
+        while ctr == True:
+            while x4m200.peek_message_respiration_legacy(): # update every 1/17 second
+                rdata = x4m200.read_message_respiration_legacy() 
+                #return("frame_counter: {} sensor_state: {} respiration_rate: {} distance: {} Breath Pattern: {} signal_quality: {}" .format(rdata.frame_counter, rdata.sensor_state, rdata.respiration_rate, rdata.distance, rdata.movement, rdata.signal_quality))
+                return("respiration_rate: {} distance: {} Breath_Pattern: {}" .format(rdata.respiration_rate, rdata.distance, rdata.movement))
 
-            while x4m200.peek_message_respiration_movinglist(): # update every 1 second
-                rdata = x4m200.read_message_respiration_movinglist() # update every 1 second
-                print("message_respiration_movinglist:\ncounter: {} \nmovement_slow_items: {} \nmovement_fast_items: {}\n".format(rdata.counter, np.array(rdata.movement_slow_items), np.array(rdata.movement_fast_items)))
+
     except:
-        print('Messages output finish!')
-    sys.exit(0)
+        return('Messages output finish!')
+    #sys.exit(0)
 
 
 def main():
-    parser = ArgumentParser()
-    parser.add_argument(
-        "-d",
-        "--device",
-        dest="device_name",
-        help="Seral port name used by target XeThru sensor, i.e com8, /dev/ttyACM0",
-        metavar="FILE")
-    parser.add_argument(
-        "-r",
-        "--record",
-        action="store_true",
-        default=False,
-        dest="record",
-        help="Enable recording")
-    parser.add_argument(
-        "-f",
-        "--file",
-        dest="meta_filename",
-        metavar="FILE",
-        help="meta file from recording")
-
-    args = parser.parse_args()
-
-    if not args.meta_filename:
-        if args.device_name:
-            device_name = args.device_name
-        else:
-            try:
-                device_name = auto()[0]
-            except:
-                print("Fail to find serial port, please specify it by use -d!")
-                raise
-        print_module_info(device_name)
-        x4m200 = configure_x4m200(
-            device_name, args.record, x4m200_par_settings)
-
+    
+    device_name = '/dev/ttyACM0'
+    if device_name:
+        device_name = '/dev/ttyACM0'
     else:
-        player = start_player(meta_filename=args.meta_filename)
-        mc = ModuleConnector(player, log_level=0)
-        x4m200 = mc.get_x4m200()
-    print_x4m200_messages(x4m200)
+        try:
+            device_name = auto()[0]
+        except:
+            print("Port Error")
+            raise
+    #print_module_info(device_name)
+    record = False
+    x4m200 = configure_x4m200(
+        device_name, record, x4m200_par_settings)
+
+    print(print_x4m200_messages(x4m200))
 
 
 if __name__ == "__main__":
