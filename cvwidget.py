@@ -105,9 +105,7 @@ class RecordVideo(QtCore.QObject):
 
                         if data.any():
                             self.image_data.emit(data)
-
-                            
-                            
+   
 
                 finally:
                     libuvc.uvc_stop_streaming(devh)
@@ -277,26 +275,17 @@ class MainWidget(QtWidgets.QWidget):
         super().__init__(parent)
         fp = haarcascade_filepath
         self.face_detection_widget = FaceDetectionWidget(fp,scale=scale)
-
-        self.face_detection_widget.vsc = scale
-
-        
+        self.face_detection_widget.vsc = scale        
         self.record_video = RecordVideo(feed)
-        #print(self.record_video)
-        image_data_slot = self.face_detection_widget.image_data_slot
-        self.record_video.image_data.connect(image_data_slot)
-
+        self.image_data_slot = self.face_detection_widget.image_data_slot
+        self.record_video.image_data.connect(self.image_data_slot)
         layout = QtWidgets.QVBoxLayout()
-
         layout.addWidget(self.face_detection_widget)
-
-        
         self.record_video.start_recording()
         self.setLayout(layout)
 
 def main(haar_cascade_filepath):
     app = QtWidgets.QApplication(sys.argv)
-
     main_window = QtWidgets.QMainWindow()
     main_widget = MainWidget(haar_cascade_filepath)
     main_window.setCentralWidget(main_widget)

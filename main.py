@@ -23,9 +23,9 @@ class SerialThread(QtCore.QThread):
 
     def run(self):
 
-        """ device_name = '/dev/ttyACM0'
+        device_name = '/dev/ttyACM0'
         record = False
-        x4m200 = radardata.configure_x4m200(device_name, record, radardata.x4m200_par_settings) """
+        x4m200 = radardata.configure_x4m200(device_name, record, radardata.x4m200_par_settings)
         
         
         while True:
@@ -33,19 +33,18 @@ class SerialThread(QtCore.QThread):
                 return
 
             
-            #radar_data = radardata.print_x4m200_messages(x4m200).split()
+            radar_data = radardata.print_x4m200_messages(x4m200).split()
 
-            """ recv = self.ser.readline().decode("utf-8")
-            recv_RD = recv.split(",") """
+            #recv = self.ser.readline().decode("utf-8")
+            #recv_RD = recv.split(",") """
             recv_RD = ["X4M200","RPM","12","State","0x00","LD","10","MAX3266BPM","HR","85","C","0","Oxygen Levels","96", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
-            """ radar_data[1] = "12"
-            radar_data[5] = "10"
+            #radar_data[1] = "12"
+            #radar_data[5] = "10"
             recv_RD[2] = str(int(float(radar_data[1])))
             recv_RD[6] = str(int(float(radar_data[5])))
-            print(radar_data) """
+            print(radar_data)
             recv=",".join(recv_RD)
-            #print(recv)
-            print(" ")
+            print(recv)
 
 
             if(len(recv)>5):
@@ -612,8 +611,9 @@ class MainWindow(QWidget):
         
 
         self.CVPanel = QHBoxLayout()
-        self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
-        self.CVPanel.addWidget(self.fd)
+        self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(220, 10, QtWidgets.QSizePolicy.Maximum))
+        self.CVPanel.addWidget(self.fd.face_detection_widget)
+        #self.fd.face_detection_widget.setAlignment(Qtcore.qt.AlignCenter)
         self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(45,100,QtWidgets.QSizePolicy.MinimumExpanding))
         self.CVPanel.addLayout(self.messagepanellayout)
         self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
@@ -790,9 +790,9 @@ class MainWindow(QWidget):
 
 
     def paintEvent(self, e):
-        self.fd.face_detection_widget.update()
+        #self.fd.face_detection_widget.update()
         self.fr.face_detection_widget.update()
-        self.fd.update()
+        #self.fd.update()
         self.fr.update()
 
         painter = QtGui.QPainter(self)
@@ -845,7 +845,7 @@ class MainWindow(QWidget):
         self.debugWindow.setMinimumSize((painter.device().width() * 0.75), painter.device().height()*0.03)
         self.GraphBorder.setGeometry(QtCore.QRect(painter.device().width()*0.62, painter.device().height()*0.55, painter.device().width()*0.35, painter.device().height()*0.35))
         self.fr.setGeometry(QtCore.QRect(painter.device().width()*0.25, painter.device().height()*0.55, painter.device().width()*0.35, painter.device().height()*0.35))
-        self.fd.setGeometry(QtCore.QRect(painter.device().width()*0.25, painter.device().height()*0.06, painter.device().width()*0.35, painter.device().height()*0.35))
+        #self.fd.setGeometry(QtCore.QRect(painter.device().width()*0.25, painter.device().height()*0.06, painter.device().width()*0.35, painter.device().height()*0.35))
         self.messagepanellayout.setGeometry(QtCore.QRect(painter.device().width()*0.62, painter.device().height()*0.06, painter.device().width()*0.35, painter.device().height()*0.35))
 
         self.Instructions.setStyleSheet("color: orange; padding-bottom:10px; text-align: center;")

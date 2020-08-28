@@ -8,14 +8,13 @@ from cvwidget import MainWidget as FDWidget
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.initUI()
 
-    def initUI(self):
         self.GraphicsWindow = QVBoxLayout()
         self.fd = FDWidget(path.abspath(path.join(path.dirname(path.realpath(__file__)), 'haarcascade_frontalface_default.xml')), scale=(self.geometry().height()/350), feed="/dev/video0")
         self.messagepanellayout = QVBoxLayout()
         self.CVPanel = QHBoxLayout()
-        self.CVPanel.addWidget(self.fd)
+        self.CVPanel.addWidget(self.fd.face_detection_widget)
+
         self.CVPanel.addLayout(self.messagepanellayout)
         self.CVPanelHeading = QHBoxLayout()
         self.InfoPanelLabels = QHBoxLayout()
@@ -31,11 +30,11 @@ class MainWindow(QWidget):
         self.show()
 
     def paintEvent(self, e):
-        self.fd.face_detection_widget.update()
+        #self.fd.face_detection_widget.update()
         self.fd.update()
         painter = QtGui.QPainter(self)
         self.brush = QtGui.QBrush()
-        self.brush.setColor(QtGui.QColor('#363a42'))
+        self.brush.setColor(QtGui.QColor('#222223'))
         self.brush.setStyle(QtCore.Qt.SolidPattern)
         self.rect = QtCore.QRect(0, 0, painter.device().width(), painter.device().height())
         painter.fillRect(self.rect, self.brush)
