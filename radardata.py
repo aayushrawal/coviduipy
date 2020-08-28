@@ -26,7 +26,7 @@ from xt_modules_record_playback_messages import start_recorder
 from xt_modules_record_playback_messages import start_player
 
 respiration_sensor_state_text = (
-    "BREATHING", "MOVEMENT", "MOVEMENT TRACKING", "NO MOVEMENT", "INITIALIZING")
+    "BREATHING", "MOVEMENT", "MOVEMENT_TRACKING", "NO_MOVEMENT", "INITIALIZING")
 # User settings introduction
 
 x4m200_par_settings = {'detection_zone': (0.4, 2),
@@ -128,7 +128,7 @@ def print_x4m200_messages(x4m200):
                 
                 rdata = x4m200.read_message_respiration_legacy()  """
                 
-                return("respiration_rate: {} distance: {} Breath_Pattern: {}" .format(rdata.respiration_rate, rdata.distance, rdata.movement))
+                return("respiration_rate: {} distance: {} Breath_Pattern: {} Sensor_State: {}" .format(rdata.respiration_rate, rdata.distance, rdata.movement, respiration_sensor_state_text[rdata.sensor_state]))
             
             """ while x4m200.peek_message_respiration_sleep(): # update every 1 second
                 rdata = x4m200.read_message_respiration_sleep() 

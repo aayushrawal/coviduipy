@@ -37,13 +37,14 @@ class SerialThread(QtCore.QThread):
 
             #recv = self.ser.readline().decode("utf-8")
             #recv_RD = recv.split(",") """
-            recv_RD = ["X4M200","RPM","12","State","0x00","LD","10","MAX3266BPM","HR","85","C","0","Oxygen Levels","96", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
+            recv = ["X4M200","RPM","0","State","0x00","LD","0","MAX3266BPM","HR","85","C","0","Oxygen Levels","96", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
             #radar_data[1] = "12"
             #radar_data[5] = "10"
-            recv_RD[2] = str(int(float(radar_data[1])))
-            recv_RD[6] = str(int(float(radar_data[5])))
+            recv[2] = str(int(float(radar_data[1])))
+            recv[6] = str(int(float(radar_data[5])))
+            recv[4] = radar_data[7]
             print(radar_data)
-            recv=",".join(recv_RD)
+            recv=",".join(recv)
             print(recv)
 
 
@@ -260,7 +261,7 @@ class HandleScan(QtCore.QThread):
                     self.GraphX = [0]
                     self.GraphY = [0]
                     self.InstructionssetText.emit("Starting Scan\nPlease Look Into The Screen")
-                    time.sleep(1)
+                    time.sleep(2)
                     self.scanprogress = 2
 
                     self.restraintrig.emit(1)
@@ -291,7 +292,7 @@ class HandleScan(QtCore.QThread):
 
                 if self.scanprogress == 4:
                     self.InstructionssetText.emit("Please Stand Still")
-                    #time.sleep(1) #Removed to lower time till breathing pattern
+                    time.sleep(1) 
                     self.scanprogress = 5
 
                 if self.scanprogress == 5:
@@ -303,7 +304,7 @@ class HandleScan(QtCore.QThread):
                         self.FinalReadings["rpm"] = self.tempRPM
                         self.InstructionssetText.emit("RPM Captured Succesfully")
                         self._gauge3value.emit(self.tempRPM)
-                        #time.sleep(1) #Removed to lower time till breathing pattern
+                        time.sleep(1) 
                         self.scanprogress = 10
                         self.InstructionssetText.emit("Resetting Graphs")
                         self.graphWidgetclear.emit(1)
@@ -792,7 +793,7 @@ class MainWindow(QWidget):
     def paintEvent(self, e):
         #self.fd.face_detection_widget.update()
         self.fr.face_detection_widget.update()
-        #self.fd.update()
+        self.fd.update()
         self.fr.update()
 
         painter = QtGui.QPainter(self)
