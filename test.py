@@ -3,7 +3,7 @@ import sys
 from os import path
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import (QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QApplication,)
-from cvwidget import MainWidget as FDWidget
+from cvwidget2 import MainWidget as FDWidget
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -38,7 +38,8 @@ class MainWindow(QWidget):
         self.brush.setStyle(QtCore.Qt.SolidPattern)
         self.rect = QtCore.QRect(0, 0, painter.device().width(), painter.device().height())
         painter.fillRect(self.rect, self.brush)
-        self.vrecti = QtCore.QRect(0, 0, (painter.device().height() * 0.29), painter.device().height())    
+        self.vrecti = QtCore.QRect(0, 0, (painter.device().height() * 0.29), painter.device().height())
+        self.fd.face_detection_widget.setGeometry(QtCore.QRect(painter.device().width()*0.25, painter.device().height()*0.06, painter.device().width()*0.35, painter.device().height()*0.35))  
 
 def main():
     app = QApplication(sys.argv)

@@ -25,7 +25,6 @@ from xt_modules_print_info import print_sensor_settings
 from xt_modules_record_playback_messages import start_recorder
 from xt_modules_record_playback_messages import start_player
 
-
 import serial
 import serial.tools.list_ports
 
@@ -33,12 +32,12 @@ respiration_sensor_state_text = (
     "BREATHING", "MOVEMENT", "MOVEMENT_TRACKING", "NO_MOVEMENT", "INITIALIZING")
 # User settings introduction
 
-x4m200_par_settings = {'detection_zone': (0.5, 2),
+x4m200_par_settings = {'detection_zone': (0.4, 1),
                        'sensitivity': 1,
                        'tx_center_frequency': 3, # 3: TX 7.29GHz low band center frequency, 4: TX 8.748GHz low band center frequency.
                        'led_control': (XTID_LED_MODE_FULL, 0),
                        # initialize noisemap everytime when get start (approximately 120s)
-                       'noisemap_control': 0b110,
+                       'noisemap_control': 0b101,
                        # only uncomment the message when you need them to avoide confliction.
                        #    'output_control1': (XTS_ID_BASEBAND_IQ, 0),
                        #    'output_control2': (XTS_ID_BASEBAND_AMPLITUDE_PHASE, 0),
@@ -55,6 +54,8 @@ x4m200_par_settings = {'detection_zone': (0.5, 2),
 
 
 def configure_x4m200(device_name, record=False, x4m200_settings=x4m200_par_settings):
+
+    
 
     mc = ModuleConnector(device_name)
     x4m200 = mc.get_x4m200()
@@ -118,29 +119,32 @@ def configure_x4m200(device_name, record=False, x4m200_settings=x4m200_par_setti
     return x4m200
 
 
-def print_x4m200_messages(x4m200):
+def print_x4m200_messages(device_name):
+    #reset(device_name)
+    x4m200 = configure_x4m200(device_name, False, x4m200_par_settings)
     try:
         
         ctr = True
         while ctr == True:
             while x4m200.peek_message_respiration_legacy(): # update every 1/17 second
                 rdata = x4m200.read_message_respiration_legacy() 
-                """ print(rdata.sensor_state)
-                x4m200 = configure_x4m200(
-        '/dev/ttyACM0', False, x4m200_par_settings)
-                #return("frame_counter: {} sensor_state: {} respiration_rate: {} distance: {} Breath Pattern: {} signal_quality: {}" .format(rdata.frame_counter, rdata.sensor_state, rdata.respiration_rate, rdata.distance, rdata.movement, rdata.signal_quality))
                 
-                rdata = x4m200.read_message_respiration_legacy()  """
+                print("respiration_rate: {} distance: {} Breath_Pattern: {} Sensor_State: {}" .format(rdata.respiration_rate, rdata.distance, rdata.movement, respiration_sensor_state_text[rdata.sensor_state]))
                 
-                return("respiration_rate: {} Breath_Pattern: {} Sensor_State: {}" .format(rdata.respiration_rate,  rdata.movement, respiration_sensor_state_text[rdata.sensor_state]))
-            
-            """ while x4m200.peek_message_respiration_sleep(): # update every 1 second
-                rdata = x4m200.read_message_respiration_sleep() 
-                return("respiration_rate: {} movement_slow: {} movement_fast: {}".format(rdata.respiration_rate, rdata.movement_slow, rdata.movement_fast)) """
+
 
     except:
         return('Messages output finish!')
     #sys.exit(0)
+
+
+def reset(device_name):
+    mc = ModuleConnector(device_name)
+    XEP = mc.get_x4m200()
+    XEP.module_reset()
+    mc.close()
+    print("Reset Success")
+    time.sleep(3)
 
 
 def main():
@@ -148,16 +152,32 @@ def main():
     ports = list(serial.tools.list_ports.comports())
     for p in ports:
         if("XeThru" in p.description):
-            print("XeThru found at:",p.device)
             device_name = p.device
+    
+    print(device_name)
+    
 
-    #print_module_info(device_name)
+    if not device_name:
+        print("Port Error")
     record = False
-    x4m200 = configure_x4m200(
-        device_name, record, x4m200_par_settings)
 
-    while True:
-        print(print_x4m200_messages(x4m200))
+    
+
+    
+
+    #reset(device_name)
+
+    #x4m200 = configure_x4m200(device_name, record, x4m200_par_settings)
+
+    print(print_x4m200_messages(device_name))
+    print(print_x4m200_messages(device_name))
+    
+    """ reset(device_name)
+    x4m200 = configure_x4m200(
+    device_name, record, x4m200_par_settings)
+
+    print(print_x4m200_messages(x4m200)) """
+        
 
 
 if __name__ == "__main__":
