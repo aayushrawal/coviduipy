@@ -129,7 +129,7 @@ def print_x4m200_messages(device_name):
             while x4m200.peek_message_respiration_legacy(): # update every 1/17 second
                 rdata = x4m200.read_message_respiration_legacy() 
                 
-                print("respiration_rate: {} distance: {} Breath_Pattern: {} Sensor_State: {}" .format(rdata.respiration_rate, rdata.distance, rdata.movement, respiration_sensor_state_text[rdata.sensor_state]))
+                return("respiration_rate: {} distance: {} Breath_Pattern: {} Sensor_State: {}" .format(rdata.respiration_rate, rdata.distance, rdata.movement, respiration_sensor_state_text[rdata.sensor_state]))
                 
 
 
@@ -169,8 +169,9 @@ def main():
 
     #x4m200 = configure_x4m200(device_name, record, x4m200_par_settings)
 
-    print(print_x4m200_messages(device_name))
-    print(print_x4m200_messages(device_name))
+    while True:
+        print(print_x4m200_messages(device_name))
+
     
     """ reset(device_name)
     x4m200 = configure_x4m200(
