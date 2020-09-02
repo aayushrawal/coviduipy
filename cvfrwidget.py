@@ -20,7 +20,7 @@ class TrainFR(QtCore.QThread):
 
         # load OpenCV face detector, I am using LBP which is fast
         # there is also a more accurate but slow Haar classifier
-        face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+        face_cascade = cv2.CascadeClassifier('/home/sensor/Desktop/coviduipy/haarcascade_frontalface_default.xml')
 
         # let's detect multiscale (some images may be closer to camera than others) images
         # result is a list of faces
@@ -179,7 +179,7 @@ class TrainFR(QtCore.QThread):
 
         # train our face recognizer of our training faces
         face_recognizer.train(faces, np.array(labels))
-        face_recognizer.write("trained_model.yml")
+        face_recognizer.write("/home/sensor/Desktop/coviduipy/trained_model.yml")
         self.Status.emit(1)
         #self.quit()
 
@@ -187,7 +187,7 @@ class TrainFR(QtCore.QThread):
 class RecordVideo(QtCore.QObject):
     image_data = QtCore.pyqtSignal(np.ndarray)
 
-    def __init__(self, camera_port=4, parent=None):
+    def __init__(self, camera_port="/dev/video2", parent=None):
         super().__init__(parent)
         self.camera_port = camera_port
         self.camera = cv2.VideoCapture(camera_port)
@@ -205,6 +205,8 @@ class RecordVideo(QtCore.QObject):
             return
         read, data = self.camera.read()
         total_frames = self.camera.get(cv2.CAP_PROP_FRAME_COUNT)
+  
+
         if(data.shape[0]>640):
             if(data.shape[0]>4000):
                 scale_percent = 5
@@ -256,7 +258,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         self.last10frames = []
         self.face_recognizer = cv2.face.LBPHFaceRecognizer_create()
         print("Loading Dataset")
-        self.face_recognizer.read("trained_model.yml")
+        self.face_recognizer.read("/home/sensor/Desktop/coviduipy/trained_model.yml")
         print("Loaded Dataset")
         pass
 
@@ -265,7 +267,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         if Stt:
             self.face_recognizer = cv2.face.LBPHFaceRecognizer_create()
             print("Loading Dataset")
-            self.face_recognizer.read("trained_model.yml")
+            self.face_recognizer.read("/home/sensor/Desktop/coviduipy/trained_model.yml")
             print("Loaded Dataset")
             self.FRTrainflag = 0
 
@@ -287,7 +289,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
         # load OpenCV face detector, I am using LBP which is fast
         # there is also a more accurate but slow Haar classifier
-        face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+        face_cascade = cv2.CascadeClassifier('/home/sensor/Desktop/coviduipy/haarcascade_frontalface_default.xml')
 
         # let's detect multiscale (some images may be closer to camera than others) images
         # result is a list of faces
@@ -424,7 +426,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
 
 class MainWidget(QtWidgets.QWidget):
-    def __init__(self, haarcascade_filepath, parent=None, scale=1, feed=4):
+    def __init__(self, haarcascade_filepath, parent=None, scale=1, feed="/dev/video2"):
         super().__init__(parent)
         fp = haarcascade_filepath
         self.face_detection_widget = FaceDetectionWidget(fp,scale=scale)
@@ -459,7 +461,7 @@ def main(haar_cascade_filepath):
 
 if __name__ == '__main__':
     script_dir = path.dirname(path.realpath(__file__))
-    cascade_filepath = path.join(script_dir,'haarcascade_frontalface_default.xml')
+    cascade_filepath = path.join(script_dir,'/home/sensor/Desktop/coviduipy/haarcascade_frontalface_default.xml')
 
     cascade_filepath = path.abspath(cascade_filepath)
     main(cascade_filepath)

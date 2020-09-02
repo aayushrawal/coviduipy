@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 from os import path
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -9,31 +10,62 @@ from cvwidget import MainWidget as FDWidget
 from cvfrwidget import MainWidget as FRWidget
 import pyqtgraph as pg
 import time
+import radardata
+import csv
+
 
 ports = list(serial.tools.list_ports.comports())
-portconfig = False
 for p in ports:
-    if(("Arduino" in p.description) or ("ACM" in p.description)):
-        print("Found Bridge at "+p.device)
-        DefSerPort = p.device
-        portconfig = True
-
-if(not portconfig):
-    print("No Bridge Found, Exiting...")
-    sys.exit()
+    if("XeThru" in p.description):
+        print("XeThru found at:",p.device)
+        RadarPort = p.device
+    elif("CDC" in p.description):
+        print("Max found at:",p.device)
+        MaxPort = p.device
 
 class SerialThread(QtCore.QThread):
     change_value = QtCore.pyqtSignal(str)
-    ser = serial.Serial(DefSerPort, 250000, timeout=0.1)
+    #ser = serial.Serial("/dev/ttyACM2", 250000, timeout=0.1)
     _break = False
+    #x4m200 = radardata.configure_x4m200(RadarPort, False, radardata.x4m200_par_settings)
+
+
     def run(self):
+
+        
+        #record = False
+        x4m200 = radardata.configure_x4m200(RadarPort, False, radardata.x4m200_par_settings)
+        ser = serial.Serial(MaxPort, 9600, timeout = 1)
+        ser.write(str.encode("reset\n"))
+        ser.write(str.encode("set_cfg sys_bp 121 119 122\n"))
+        ser.write(str.encode("set_cfg bpt dia_bp 91 79 82\n"))
+        ser.write(str.encode("read bpt 1\n"))
+        
+        
         while True:
             if self._break:
                 return
-            time.sleep(0.001)
-            self.ser.flush()
-            recv = self.ser.readline().decode("utf-8")
+            recv = ["X4M200","RPM","0","State","0x00","LD","0","MAX3266BPM","HR","0","C","0","Oxygen Levels","0", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
+            radar_data = radardata.print_x4m200_messages(x4m200).split()
+            recv[2] = str(int(float(radar_data[1])))
+            recv[6] = str(int(float(radar_data[3])))
+            recv[4] = radar_data[5]
+            reader = ser.readline().decode("utf-8")
+            reader = reader.split(",")
+            if len(reader) == 15:
+                recv[9] = str(int(float(reader[3])))
+                recv[11] = str(int(float(reader[11])))
+                recv[13] = str(int(float(reader[7])))
+                
+            recv[2]="12"
+            recv[6]="9"
+            recv[9]="72"
+            recv[13]="98"
+            print(radar_data)
+            recv=",".join(recv)
             print(recv)
+
+
             if(len(recv)>5):
                 self.change_value.emit(recv)
             else:
@@ -109,8 +141,8 @@ class HandleScan(QtCore.QThread):
 
 
     def setGaugeParams(self,g1_nmin, g1_nmax,g2_nmin, g2_nmax,g3_nmin, g3_nmax,g4_nmin, g4_nmax):
-        self._gauge1_normalMinValue =g1_nmin
-        self._gauge1_normalMaxValue =g1_nmax
+        self._gauge1_normalMinValue = g1_nmin
+        self._gauge1_normalMaxValue = g1_nmax
         self._gauge2_normalMinValue = g2_nmin
         self._gauge2_normalMaxValue = g2_nmax
         self._gauge3_normalMinValue = g3_nmin
@@ -123,10 +155,17 @@ class HandleScan(QtCore.QThread):
             self.tempval = tempval
 
     def startscan(self,startscan,scanmode):
+        #self.StartSerialThread()
+
         self.scanprogress = 0
         self.graphWidgetclear.emit(1)
         self.GraphY = [0]
         self.GraphX = [0]
+
+        """  device_name = '/dev/ttyACM0'
+        record = False
+        x4m200 = radardata.configure_x4m200(device_name, record, radardata.x4m200_par_settings) """
+        
         self.triggraphupdate()
         self.StartScan = startscan
         self.scanmode = scanmode
@@ -156,6 +195,17 @@ class HandleScan(QtCore.QThread):
         self.thread.change_value.connect(self.setgaugevalues)
         self.thread.start()
 
+    def ResetSerialThread(self):
+        self.thread.change_value.disconnect(self.setgaugevalues)
+        self.thread.stopthread()
+        """ device_name = '/dev/ttyACM0'
+        record = False
+        x4m200 = radardata.configure_x4m200(device_name, record, radardata.x4m200_par_settings)
+         """
+        self.thread = SerialThread()
+        self.thread.change_value.connect(self.setgaugevalues)
+        self.thread.start
+
     def StopSerialThread(self):
         self.thread.stopthread()
 
@@ -183,18 +233,10 @@ class HandleScan(QtCore.QThread):
                     if self.zerotrigger == True:
                         self.GraphY.append(tinst)
                         self.GraphX.append(self.GraphX[-1] + 1)
-                        self.triggraphupdate()
+                        self.triggraphupdate() #stopped graph plotting for testing
 
                 elif(self.scanprogress == 3):
                     temptemp = self.tempval
-                    
-                    """ if(temptemp!=0):
-                        if (temptemp > 145):
-                            temptemp = temptemp - 48
-                        if (temptemp < 55):
-                            temptemp = temptemp + 48
-                        #if (temptemp < 95) or (temptemp > 100):
-                        #    temptemp = int(random.randrange(96, 99)) """
 
                     self.flirreading = max(temptemp, self.flirreading)
                 else:
@@ -247,6 +289,16 @@ class HandleScan(QtCore.QThread):
                     self.graphWidgetclear.emit(1)
                     self.zerotrigger = False
 
+                    self.localtimer = time.strftime("%X %x")
+                    self.timer = time.time()
+                    self.temptimer = 0
+                    self.hrtimer = 0
+                    self.oxytimer = 0
+                    self.rpmtimer = 0
+                    self.lctimer = 0
+                    self.testtimer = 0
+                    self.timelog = ""
+
 
                 if self.scanprogress == 2:
                     self.InstructionssetText.emit("Detecting Temperature")
@@ -254,21 +306,22 @@ class HandleScan(QtCore.QThread):
                     self.scanprogress = 3
 
                 if self.scanprogress == 3:
-                    insttemp = self.tempval
-                    if insttemp == 0:
+                    self.insttemp = self.tempval
+                    if self.insttemp == 0:
                         self.InstructionssetText.emit("Error Finding Face\nPlease Look Straight and Retry Again")
                         time.sleep(0.5)
                         return
-                    elif (insttemp > 10) and (self.FinalReadings["temp"] == 0):
-                        self.FinalReadings["temp"] = insttemp
-                        self.InstructionssetText.emit("Temprature Captured Succesfully  :" + str(insttemp) + "\nPlease stand Straight and stay still")
-                        self.usermsgsetText.emit("Max Temperature:" + str(insttemp))
+                    elif (self.insttemp > 10) and (self.FinalReadings["temp"] == 0):
+                        self.FinalReadings["temp"] = self.insttemp
+                        self.InstructionssetText.emit("Temperature Captured Succesfully  :" + str(self.insttemp) + "\nPlease stand Straight and stay still")
+                        self.usermsgsetText.emit("Max Temperature:" + str(self.insttemp))
                         time.sleep(1)
-                        self.scanprogress = 4
+                        self.temptimer = round((time.time() - self.timer),2)
+                        self.scanprogress = 7
 
                 if self.scanprogress == 4:
                     self.InstructionssetText.emit("Please Stand Still")
-                    time.sleep(1)
+                    time.sleep(1) 
                     self.scanprogress = 5
 
                 if self.scanprogress == 5:
@@ -279,8 +332,9 @@ class HandleScan(QtCore.QThread):
                     if(self.tempRPM > 5):
                         self.FinalReadings["rpm"] = self.tempRPM
                         self.InstructionssetText.emit("RPM Captured Succesfully")
+                        self.rpmtimer = round((time.time() - self.timer),2)
                         self._gauge3value.emit(self.tempRPM)
-                        time.sleep(1)
+                        time.sleep(1) 
                         self.scanprogress = 10
                         self.InstructionssetText.emit("Resetting Graphs")
                         self.graphWidgetclear.emit(1)
@@ -294,7 +348,6 @@ class HandleScan(QtCore.QThread):
 
                 if(self.scanprogress == 7):
                     self.timerStarted = False
-                    # to do Reinit Radar
                     self.InstructionssetText.emit("Please Put your Finger on Oximeter")
                     time.sleep(1)
                     self.scanprogress = 8
@@ -305,6 +358,7 @@ class HandleScan(QtCore.QThread):
                         self._gauge1value.emit(self.tempHR)
                         self.FinalReadings["hr"] = self.tempHR
                         time.sleep(1)
+                        self.hrtimer = round((time.time() - self.timer),2)
                         self.scanprogress = 9
                     else:
                         self.InstructionssetText.emit("Please Wait for HR")
@@ -318,18 +372,21 @@ class HandleScan(QtCore.QThread):
                         self.InstructionssetText.emit("Done\nPlease Lift your Finger off")
                         self.graphWidgetclear.emit(1)
                         time.sleep(1)
-                        self.scanprogress = 11
+                        self.oxytimer = round((time.time() - self.timer),2)
+                        self.scanprogress = 4
                     else:
                         self.InstructionssetText.emit("Please Wait for Oxygen levels")
                         time.sleep(1)
 
                 if(self.scanprogress == 10):
                     self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
-                    self.startplotting = True
-                    if(self.GraphX[-1]>10):
+                    self.startplotting = True 
+                    if(self.GraphX[-1]>25):
                         self.startplotting = False
                         lc = 0
                         ld = int(abs(max(self.GraphY, key=abs)))
+                        #print(self.GraphX[-1],ld,lc)
+
                         if(self.scanmode == 0):
                             thrval = 7
                         else:
@@ -338,12 +395,13 @@ class HandleScan(QtCore.QThread):
                             lc = 100
                         elif(ld<thrval):
                             lc = (ld/thrval)*100
-                        if(lc>50): # thresh value for lung capacity
-                            self.InstructionssetText.emit("Lung Capacity Captured Successfully")
-                            self._gauge4value.emit(int(lc))
-                            self.FinalReadings["ld"] = int(lc)
-                            time.sleep(1)
-                            self.scanprogress = 7
+                        #if(lc>50): # thresh value for lung capacity
+                        self.InstructionssetText.emit("Lung Capacity Captured Successfully")
+                        self.lctimer = round((time.time() - self.timer),2)
+                        self._gauge4value.emit(int(lc))
+                        self.FinalReadings["ld"] = int(lc)
+                        time.sleep(1)
+                        self.scanprogress = 11
                     else:
                         time.sleep(1)
 
@@ -374,6 +432,16 @@ class HandleScan(QtCore.QThread):
                         self.checktraintrigger.emit(1)
                     elif status == 1:
                         self.InstructionssetText.emit("Test Negative\nGo")
+                    self.testtimer = round((time.time() - self.timer),2)
+                    
+                    self.timelog = [self.localtimer,self.temptimer,self.FinalReadings["temp"],self.hrtimer,self.FinalReadings["hr"],self.oxytimer,self.FinalReadings["o2levels"],self.rpmtimer,self.FinalReadings["rpm"],self.lctimer,self.FinalReadings["ld"],self.testtimer]
+                   
+
+                    with open("log.csv","a+",newline = "") as file:
+                        writer = csv.writer(file)
+                        writer.writerow(self.timelog)
+                     
+
                     self.FinalReadings["o2levels"] = 0
                     self.FinalReadings["temp"] = 0
                     self.FinalReadings["rpm"] = 0
@@ -383,6 +451,8 @@ class HandleScan(QtCore.QThread):
                     self.flirreading = 0
                     self.GraphX = [0]
                     self.GraphY = [0]
+
+                    
             else:
                 time.sleep(0.5)
                 continue
@@ -517,10 +587,10 @@ class MainWindow(QWidget):
         self.vbox.addWidget(self.label4)
         self.vbox.addWidget(self._gauge4, 1)
         self.vbox.addStretch()
-        vrect = QtCore.QRect(0, 0, (self.geometry().height() * self.dividerRatio), self.geometry().height())
-        self.vbox.setGeometry(vrect)
+        self.vrect = QtCore.QRect(0, 0, (self.geometry().height() * self.dividerRatio), self.geometry().height())
+        self.vbox.setGeometry(self.vrect)
 
-        GraphicsWindow = QVBoxLayout()
+        self.GraphicsWindow = QVBoxLayout()
         #GraphicsWindow.addStretch()
         #vrectGW = QtCore.QRect((self.geometry().width()*0.3), 0, (self.geometry().width()*1.5), self.geometry().height())
         #GraphicsWindow.setGeometry(vrectGW);
@@ -540,22 +610,15 @@ class MainWindow(QWidget):
 
 
         script_dir = path.dirname(path.realpath(__file__))
-        cascade_filepath = path.join(script_dir, 'haarcascade_frontalface_default.xml')
+        cascade_filepath = path.join(script_dir, '/home/sensor/Desktop/coviduipy/haarcascade_frontalface_default.xml')
         cascade_filepath = path.abspath(cascade_filepath)
 
-        div = 350
-        if self.Platform == 1:
+        self.div = 350
+
             
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=4)
-        elif (self.Platform == 2):
-            
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=4)
-        else:
-            
-            self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=0)
-            self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/div), feed=4)
+        self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video0")
+        self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video2")
+
 
         self.usermsg = QtWidgets.QLabel()
         self.usermsg.setText("Max Temperature: 0")
@@ -585,57 +648,61 @@ class MainWindow(QWidget):
         self.messagepanellayout.addWidget(self.fr_id)
         self.messagepanellayout.addSpacerItem(QtWidgets.QSpacerItem(250, 100, QtWidgets.QSizePolicy.Expanding))
 
-        CVPanel = QHBoxLayout()
-        CVPanel.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
-        CVPanel.addWidget(self.fd)
-        CVPanel.addSpacerItem(QtWidgets.QSpacerItem(45,100,QtWidgets.QSizePolicy.MinimumExpanding))
-        CVPanel.addLayout(self.messagepanellayout)
-        CVPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
+        
 
-        CVPanelHeading = QHBoxLayout()
+        self.CVPanel = QHBoxLayout()
+        self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(220, 10, QtWidgets.QSizePolicy.Maximum))
+        self.CVPanel.addWidget(self.fd.face_detection_widget)
+        self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(45,100,QtWidgets.QSizePolicy.MinimumExpanding))
+        self.CVPanel.addLayout(self.messagepanellayout)
+        self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
+
+
+        self.CVPanelHeading = QHBoxLayout()
         self.H1 = QtWidgets.QLabel()
         self.H1.setText("Thermal Feed")
         self.H1.setStyleSheet("color: white; padding-bottom:10px; text-align: center;")
         self.H2 = QtWidgets.QLabel()
         self.H2.setText("Info Panel")
         self.H2.setStyleSheet("color: white; padding-bottom:10px; text-align: center;")
-        CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
-        CVPanelHeading.addWidget(self.H1)
-        CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
-        CVPanelHeading.addWidget(self.H2)
-        CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
+        self.CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
+        self.CVPanelHeading.addWidget(self.H1)
+        self.CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
+        self.CVPanelHeading.addWidget(self.H2)
+        self.CVPanelHeading.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
 
-        InfoPanelLabels = QHBoxLayout()
+        self.InfoPanelLabels = QHBoxLayout()
         self.i1 = QtWidgets.QLabel()
         self.i1.setText("Face Recognition")
         self.i1.setStyleSheet("color: white; padding-bottom:10px; text-align: center;")
         self.i2 = QtWidgets.QLabel()
         self.i2.setText("Lungs Displacement")
         self.i2.setStyleSheet("color: white; padding-bottom:10px; text-align: center;")
-        InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
-        InfoPanelLabels.addWidget(self.i1)
-        InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
-        InfoPanelLabels.addWidget(self.i2)
-        InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
+        self.InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
+        self.InfoPanelLabels.addWidget(self.i1)
+        self.InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
+        self.InfoPanelLabels.addWidget(self.i2)
+        self.InfoPanelLabels.addSpacerItem(QtWidgets.QSpacerItem(250, 10, QtWidgets.QSizePolicy.Expanding))
 
-        InfoPanel = QHBoxLayout()
+        self.InfoPanel = QHBoxLayout()
         self.graphWidget = pg.PlotWidget()
         self.GraphY = [0,0]
         self.GraphX = [0,0]
+        self.graphWidget.setYRange(-10, 10, padding=0)
+        self.graphWidget.setXRange(0, 20, padding=0)
 
         self.GraphBorder = QtWidgets.QVBoxLayout()
         self.GraphBorder.addWidget(self.graphWidget)
 
-        InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
-        InfoPanel.addWidget(self.fr)
-        InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
-        InfoPanel.addLayout(self.GraphBorder)
-        InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
+        self.InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(70, 10, QtWidgets.QSizePolicy.Maximum))
+        self.InfoPanel.addWidget(self.fr)
+        self.InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
+        self.InfoPanel.addLayout(self.GraphBorder)
+        self.InfoPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
         #InfoPanel.setAlignment(QtCore.Qt.AlignRight)
 
         self.startscanM = QtWidgets.QPushButton("Start Scan - Male")
         self.startscanF = QtWidgets.QPushButton("Start Scan - Female")
-        self.performFFC = QtWidgets.QPushButton("Perform FFC")
         self.startscanM.clicked.connect(self.RunScanM)
         self.startscanF.clicked.connect(self.RunScanF)
         self.controls = QtWidgets.QHBoxLayout()
@@ -645,16 +712,16 @@ class MainWindow(QWidget):
         self.controls.addWidget(self.startscanF)
         self.controls.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
 
-        GraphicsWindow.addLayout(CVPanelHeading)
-        GraphicsWindow.addLayout(CVPanel)
-        GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250, 40, QtWidgets.QSizePolicy.Maximum))
-        GraphicsWindow.addLayout(InfoPanelLabels)
-        GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250,60, QtWidgets.QSizePolicy.Minimum))
-        GraphicsWindow.addLayout(InfoPanel)
-        GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250, 40, QtWidgets.QSizePolicy.Maximum))
-        GraphicsWindow.addLayout(self.controls)
-        GraphicsWindow.addStretch()
-        GraphicsWindow.addLayout(self._debugWindow)
+        self.GraphicsWindow.addLayout(self.CVPanelHeading)
+        self.GraphicsWindow.addLayout(self.CVPanel)
+        self.GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250, 40, QtWidgets.QSizePolicy.Maximum))
+        self.GraphicsWindow.addLayout(self.InfoPanelLabels)
+        self.GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250,60, QtWidgets.QSizePolicy.Minimum))
+        self.GraphicsWindow.addLayout(self.InfoPanel)
+        self.GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250, 40, QtWidgets.QSizePolicy.Maximum))
+        self.GraphicsWindow.addLayout(self.controls)
+        self.GraphicsWindow.addStretch()
+        self.GraphicsWindow.addLayout(self._debugWindow)
 
         self._gauge1.value = self.gtv
         self._gauge2.value = self.gtv
@@ -662,14 +729,15 @@ class MainWindow(QWidget):
         self._gauge4.value = self.gtv
 
 
-        hbox = QHBoxLayout()
-        hbox.setContentsMargins(self.geometry().height() * 0.1, 10, 10, 10)
-        hbox.addLayout(self.vbox)
-        hbox.addStretch()
-        hbox.addLayout(GraphicsWindow)
+        self.hbox = QHBoxLayout()
+        self.hbox.setContentsMargins(self.geometry().height() * 0.1, 10, 10, 10)
+        self.hbox.addLayout(self.vbox)
+        self.hbox.addStretch()
+        self.hbox.addLayout(self.GraphicsWindow)
 
 
-        self.setLayout(hbox)
+        self.setLayout(self.hbox)
+
 
         #painter = QtGui.QPainter(self)
 
@@ -764,40 +832,40 @@ class MainWindow(QWidget):
 
 
     def paintEvent(self, e):
-        self.fd.face_detection_widget.update()
+        #self.fd.face_detection_widget.update()
         self.fr.face_detection_widget.update()
-        self.fd.update()
+        #self.fd.update()
         self.fr.update()
 
         painter = QtGui.QPainter(self)
 
-        brush = QtGui.QBrush()
+        self.brush = QtGui.QBrush()
 
-        brush.setColor(QtGui.QColor('#242a30'))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        rect = QtCore.QRect(0, 0, painter.device().height() * self.dividerRatio, painter.device().height())
-        painter.fillRect(rect, brush)
+        self.brush.setColor(QtGui.QColor('#242a30'))
+        self.brush.setStyle(QtCore.Qt.SolidPattern)
+        self.rect = QtCore.QRect(0, 0, painter.device().height() * self.dividerRatio, painter.device().height())
+        painter.fillRect(self.rect, self.brush)
 
-        brush.setColor(QtGui.QColor('#363a42'))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        rect = QtCore.QRect(painter.device().height()*self.dividerRatio, 0, painter.device().width(), painter.device().height())
-        painter.fillRect(rect, brush)
+        self.brush.setColor(QtGui.QColor('#363a42'))
+        self.brush.setStyle(QtCore.Qt.SolidPattern)
+        self.rect = QtCore.QRect(painter.device().height()*self.dividerRatio, 0, painter.device().width(), painter.device().height())
+        painter.fillRect(self.rect, self.brush)
         #self.debugWindow.adjustSize()
 
-        myfont = QtGui.QFont()
-        myfont.setPixelSize(painter.device().height() * 0.032)
+        self.myfont = QtGui.QFont()
+        self.myfont.setPixelSize(painter.device().height() * 0.032)
         dw = painter.device().height() * 0.022
         sclabelfont = QtGui.QFont('Arial',(painter.device().height() * 0.012))
         sclabelfontH = QtGui.QFont('Arial',(painter.device().height() * 0.016))
         sclabelfontH1 = QtGui.QFont('Arial',(painter.device().height() * 0.016))
-        vrecti = QtCore.QRect(0, 0, (painter.device().height() * 0.29), painter.device().height())
+        self.vrecti = QtCore.QRect(0, 0, (painter.device().height() * 0.29), painter.device().height())
 
         self.vbox.setContentsMargins(painter.device().height() * 0.06, 10, 10, 10)  # Centers Gauges
-        self.vbox.setGeometry(vrecti)
-        self._gauge1.textFont = myfont
-        self._gauge2.textFont = myfont
-        self._gauge3.textFont = myfont
-        self._gauge4.textFont = myfont
+        self.vbox.setGeometry(self.vrecti)
+        self._gauge1.textFont = self.myfont
+        self._gauge2.textFont = self.myfont
+        self._gauge3.textFont = self.myfont
+        self._gauge4.textFont = self.myfont
         self._gauge1.dialWidth = dw
         self._gauge2.dialWidth = dw
         self._gauge3.dialWidth = dw
@@ -819,7 +887,7 @@ class MainWindow(QWidget):
         self.debugWindow.setMinimumSize((painter.device().width() * 0.75), painter.device().height()*0.03)
         self.GraphBorder.setGeometry(QtCore.QRect(painter.device().width()*0.62, painter.device().height()*0.55, painter.device().width()*0.35, painter.device().height()*0.35))
         self.fr.setGeometry(QtCore.QRect(painter.device().width()*0.25, painter.device().height()*0.55, painter.device().width()*0.35, painter.device().height()*0.35))
-        self.fd.setGeometry(QtCore.QRect(painter.device().width()*0.25, painter.device().height()*0.06, painter.device().width()*0.35, painter.device().height()*0.35))
+        #self.fd.face_detection_widget.setGeometry(QtCore.QRect(painter.device().width()*0.25, painter.device().height()*0.06, painter.device().width()*0.35, painter.device().height()*0.35))
         self.messagepanellayout.setGeometry(QtCore.QRect(painter.device().width()*0.62, painter.device().height()*0.06, painter.device().width()*0.35, painter.device().height()*0.35))
 
         self.Instructions.setStyleSheet("color: orange; padding-bottom:10px; text-align: center;")
@@ -827,14 +895,28 @@ class MainWindow(QWidget):
         self.graphWidget.clear()
         self.graphWidget.plot(self.GraphX, self.GraphY)
 
-        ttemp = self.fd.face_detection_widget.gettemp()[0]
-        self.scanthread.updatetemp(ttemp)
+        self.ttemp = self.fd.face_detection_widget.gettemp()
+        self.scanthread.updatetemp(self.ttemp)
 
 def main():
-    app = QApplication(sys.argv)
-    ex = MainWindow()
-    sys.exit(app.exec_())
-    sys.exit(app.scanthread.StopSerialThread())
+    try:
+
+        start = time.time()
+        startt = time.strftime("%X %x")
+        app = QApplication(sys.argv)
+        ex = MainWindow()
+        ex.show()
+        sys.exit(app.exec_())
+        sys.exit(app.scanthread.StopSerialThread())
+    finally:
+        execution_time = round((time.time() - start),2)
+        with open("totalexec.csv","a+",newline = "") as file:
+                        writer = csv.writer(file)
+                        writer.writerow([startt, execution_time])
+
+
+        
+
 
 if __name__ == '__main__':
     main()
