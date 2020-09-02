@@ -11,6 +11,9 @@ from cvfrwidget import MainWidget as FRWidget
 import pyqtgraph as pg
 import time
 import radardata
+import csv
+import timeit
+
 
 ports = list(serial.tools.list_ports.comports())
 for p in ports:
@@ -314,7 +317,7 @@ class HandleScan(QtCore.QThread):
                         self.InstructionssetText.emit("Temperature Captured Succesfully  :" + str(self.insttemp) + "\nPlease stand Straight and stay still")
                         self.usermsgsetText.emit("Max Temperature:" + str(self.insttemp))
                         time.sleep(1)
-                        self.temptimer = time.time() - self.timer
+                        self.temptimer = round((time.time() - self.timer),2)
                         self.scanprogress = 7
 
                 if self.scanprogress == 4:
@@ -330,7 +333,7 @@ class HandleScan(QtCore.QThread):
                     if(self.tempRPM > 5):
                         self.FinalReadings["rpm"] = self.tempRPM
                         self.InstructionssetText.emit("RPM Captured Succesfully")
-                        self.rpmtimer = time.time() - self.timer
+                        self.rpmtimer = round((time.time() - self.timer),2)
                         self._gauge3value.emit(self.tempRPM)
                         time.sleep(1) 
                         self.scanprogress = 10
@@ -356,7 +359,7 @@ class HandleScan(QtCore.QThread):
                         self._gauge1value.emit(self.tempHR)
                         self.FinalReadings["hr"] = self.tempHR
                         time.sleep(1)
-                        self.hrtimer = time.time() - self.timer
+                        self.hrtimer = round((time.time() - self.timer),2)
                         self.scanprogress = 9
                     else:
                         self.InstructionssetText.emit("Please Wait for HR")
@@ -370,7 +373,7 @@ class HandleScan(QtCore.QThread):
                         self.InstructionssetText.emit("Done\nPlease Lift your Finger off")
                         self.graphWidgetclear.emit(1)
                         time.sleep(1)
-                        self.oxytimer = time.time() - self.timer
+                        self.oxytimer = round((time.time() - self.timer),2)
                         self.scanprogress = 4
                     else:
                         self.InstructionssetText.emit("Please Wait for Oxygen levels")
@@ -395,7 +398,7 @@ class HandleScan(QtCore.QThread):
                             lc = (ld/thrval)*100
                         #if(lc>50): # thresh value for lung capacity
                         self.InstructionssetText.emit("Lung Capacity Captured Successfully")
-                        self.lctimer = time.time() - self.timer
+                        self.lctimer = round((time.time() - self.timer),2)
                         self._gauge4value.emit(int(lc))
                         self.FinalReadings["ld"] = int(lc)
                         time.sleep(1)
@@ -430,7 +433,16 @@ class HandleScan(QtCore.QThread):
                         self.checktraintrigger.emit(1)
                     elif status == 1:
                         self.InstructionssetText.emit("Test Negative\nGo")
-                    self.testtimer = time.time() - self.timer
+                    self.testtimer = round((time.time() - self.timer),2)
+                    
+                    self.timelog = [self.localtimer,self.temptimer,self.FinalReadings["temp"],self.hrtimer,self.FinalReadings["hr"],self.oxytimer,self.FinalReadings["o2levels"],self.rpmtimer,self.FinalReadings["rpm"],self.lctimer,self.FinalReadings["ld"],self.testtimer]
+                   
+
+                    with open("log.csv","a+",newline = "") as file:
+                        writer = csv.writer(file)
+                        writer.writerow(self.timelog)
+                     
+
                     self.FinalReadings["o2levels"] = 0
                     self.FinalReadings["temp"] = 0
                     self.FinalReadings["rpm"] = 0
@@ -440,11 +452,6 @@ class HandleScan(QtCore.QThread):
                     self.flirreading = 0
                     self.GraphX = [0]
                     self.GraphY = [0]
-
-                    f = open("timelog.txt","a+")
-                    self.timelog = "Local time: "+str(self.localtimer)+" Scan start time(seconds): "+str(self.timer)+" Temperature captured in: "+str(round(self.temptimer,2))+" Heart rate captured in: "+str(round(self.hrtimer,2))+" Oxygen captured in: "+str(round(self.oxytimer,2))+" RPM captured in: "+str(round(self.rpmtimer,2))+" LC calculated in: "+str(round(self.lctimer,2))+" Test completed in: "+str(round(self.testtimer,2))+"\n"
-                    f.write(self.timelog)
-                    f.close()
 
                     
             else:
@@ -893,12 +900,23 @@ class MainWindow(QWidget):
         self.scanthread.updatetemp(self.ttemp)
 
 def main():
-    app = QApplication(sys.argv)
-    ex = MainWindow()
-    ex.show()
-    sys.exit(app.exec_())
-    sys.exit(app.scanthread.StopSerialThread())
-    
+    try:
+
+        start = timeit.default_timer()
+        app = QApplication(sys.argv)
+        ex = MainWindow()
+        ex.show()
+        sys.exit(app.exec_())
+        sys.exit(app.scanthread.StopSerialThread())
+    finally:
+        stop = timeit.default_timer()
+        execution_time = stop - start
+        with open("totalexec.csv","a+",newline = "") as file:
+                        writer = csv.writer(file)
+                        writer.writerow([execution_time])
+
+
+        
 
 
 if __name__ == '__main__':
