@@ -12,7 +12,6 @@ import pyqtgraph as pg
 import time
 import radardata
 import csv
-import timeit
 
 
 ports = list(serial.tools.list_ports.comports())
@@ -902,18 +901,18 @@ class MainWindow(QWidget):
 def main():
     try:
 
-        start = timeit.default_timer()
+        start = time.time()
+        startt = time.strftime("%X %x")
         app = QApplication(sys.argv)
         ex = MainWindow()
         ex.show()
         sys.exit(app.exec_())
         sys.exit(app.scanthread.StopSerialThread())
     finally:
-        stop = timeit.default_timer()
-        execution_time = stop - start
+        execution_time = round((time.time() - start),2)
         with open("totalexec.csv","a+",newline = "") as file:
                         writer = csv.writer(file)
-                        writer.writerow([execution_time])
+                        writer.writerow([startt, execution_time])
 
 
         
