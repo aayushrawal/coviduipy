@@ -187,7 +187,7 @@ class TrainFR(QtCore.QThread):
 class RecordVideo(QtCore.QObject):
     image_data = QtCore.pyqtSignal(np.ndarray)
 
-    def __init__(self, camera_port="/dev/video2", parent=None):
+    def __init__(self, camera_port="/dev/video3", parent=None):
         super().__init__(parent)
         self.camera_port = camera_port
         self.camera = cv2.VideoCapture(camera_port)
@@ -426,7 +426,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
 
 class MainWidget(QtWidgets.QWidget):
-    def __init__(self, haarcascade_filepath, parent=None, scale=1, feed="/dev/video2"):
+    def __init__(self, haarcascade_filepath, parent=None, scale=1, feed="/dev/video3"):
         super().__init__(parent)
         fp = haarcascade_filepath
         self.face_detection_widget = FaceDetectionWidget(fp,scale=scale)
