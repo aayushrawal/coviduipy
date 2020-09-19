@@ -1,0 +1,93 @@
+ sudo env "PYTHONPATH=$PYTHONPATH:/opt/intel/openvino_2020.4.287/python/python3.7:/opt/intel/openvino_2020.4.287/python/python3:/opt/intel/openvino_2020.4.287/deployment_tools/open_model_zoo/tools/accuracy_checker:/opt/intel/openvino_2020.4.287/deployment_tools/model_optimizer::/opt/movidius/caffe/python" python3 facer2.py
+
+
+/opt/intel/openvino_2020.4.287/deployment_tools/inference_engine/lib/intel64/
+
+PYTHONPATH=$PYTHONPATH:/opt/intel/openvino_2020.4.287/python/python3.7:/opt/intel/openvino_2020.4.287/python/python3:/opt/intel/openvino_2020.4.287/deployment_tools/open_model_zoo/tools/accuracy_checker:/opt/intel/openvino_2020.4.287/deployment_tools/model_optimizer
+
+
+ source ./setupvars.sh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  104  python3
+  105  which python3
+  106  python3
+  107  export PYTHONPATH=$PYTHONPATH
+  108  echo $PYTHONPATH
+  109  export PYTHONPATH=$PYTHONPATH:/opt/intel/openvino_2020.4.287/python/python3.7:/opt/intel/openvino_2020.4.287/python/python3:/opt/intel/openvino_2020.4.287/deployment_tools/open_model_zoo/tools/accuracy_checker:/opt/intel/openvino_2020.4.287/deployment_tools/model_optimizer::/opt/movidius/caffe/python
+  110  echo $PYTHONPATH
+  111  python3 facer2.py 
+  112  echo $LD_LIBRARY_PATH
+  113  python3 cvwidget.py 
+  114  sudo python3 facer2.py 
+  115  sudo python3 cvwidget.py 
+  116  whoami
+  117  echo $PYTHONPATH
+  118  export PYTHONPATH = $PYTHONPATH:/opt/intel/openvino_2020.4.287/python/python3.7:/opt/intel/openvino_2020.4.287/python/python3:/opt/intel/openvino_2020.4.287/deployment_tools/open_model_zoo/tools/accuracy_checker:/opt/intel/openvino_2020.4.287/deployment_tools/model_optimizer::/opt/movidius/caffe/python
+  119  export PYTHONPATH=$PYTHONPATH:/opt/intel/openvino_2020.4.287/python/python3.7:/opt/intel/openvino_2020.4.287/python/python3:/opt/intel/openvino_2020.4.287/deployment_tools/open_model_zoo/tools/accuracy_checker:/opt/intel/openvino_2020.4.287/deployment_tools/model_optimizer::/opt/movidius/caffe/python
+  120  echo $PYTHONPATH
+  121  $PYTHONPATH
+  122  python3 facer2.py 
+  123  sudo python3 facer2.py 
+  124  python3 cvwidget.py 
+  125  find / -name "libopencv_ml.so.4.4"
+  126  sudo nano /etc/local/lib/libopencv_ml.so.4.4
+  127  sudo nano /etc/ld.so.conf.d/opencv.conf
+  128  sudo ldconfig -v
+  129  python3 cvwidget.py 
+  130  exit
+  131  ./setupvars.sh 
+  132  echo $PYTHONPATH
+  133  exit
+  134  ./setupvars.sh 
+  135  PYTHONPATH=$PYTHONPATH:/opt/intel/openvino_2020.4.287/python/python3.7:/opt/intel/openvino_2020.4.287/python/python3:/opt/intel/openvino_2020.4.287/deployment_tools/open_model_zoo/tools/accuracy_checker:/opt/intel/openvino_2020.4.287/deployment_tools/model_optimizer::/opt/movidius/caffe/python
+  136  $PYTHONPATH
+  137  python3
+  138  cd /home/sensor/Desktop/coviduipy/
+  139  python3 facer2.py
+  140  echo $PYTHONPATH
+  141  export  PYTHONPATH=$PYTHONPATH:/opt/intel/openvino_2020.4.287/python/python3.7:/opt/intel/openvino_2020.4.287/python/python3:/opt/intel/openvino_2020.4.287/deployment_tools/open_model_zoo/tools/accuracy_checker:/opt/intel/openvino_2020.4.287/deployment_tools/model_optimizer::/opt/movidius/caffe/python
+  142  python3 facer2.py
+  143  echo $PATH
+  144  exit
+  145  source ./setupvars.sh
+  146  $PYTHONPATH
+  147  cd /home/sensor/Desktop
+  148  cd coviduipy/
+  149  python3 facer2.py 
+  150  python3 main.py
+  151  python3 mainopenvino.py 
+  152  python3 cvwidget.py 
+  153  killall -9 python3
+  154  python3 mainopenvino.py 
+  155  clear
+  156  python3 mainopenvino.py 
+  157  clear
+  158  python3 mainopenvino.py 
+  159  clear
+  160  python3 mainopenvino.py 
+  161  clear
+  162  python3 mainopenvino.py 
+  163  cclear
+  164  clear
+  165  python3 mainopenvino.py 
+  166  clear
+  167  history

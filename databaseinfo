@@ -1,0 +1,22 @@
+mysql> use user_info;
+Database changed
+mysql> CREATE TABLE positive (id int, imgpath varchar(1024), time datetime, result varchar(8), temp int, hr int, o2 int, rpm int, ld int);
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> show columns from positive;
++---------+---------------+------+-----+---------+-------+
+| Field   | Type          | Null | Key | Default | Extra |
++---------+---------------+------+-----+---------+-------+
+| id      | int(11)       | YES  |     | NULL    |       |
+| imgpath | varchar(1024) | YES  |     | NULL    |       |
+| time    | datetime      | YES  |     | NULL    |       |
+| result  | varchar(8)    | YES  |     | NULL    |       |
+| temp    | int(11)       | YES  |     | NULL    |       |
+| hr      | int(11)       | YES  |     | NULL    |       |
+| o2      | int(11)       | YES  |     | NULL    |       |
+| rpm     | int(11)       | YES  |     | NULL    |       |
+| ld      | int(11)       | YES  |     | NULL    |       |
++---------+---------------+------+-----+---------+-------+
+9 rows in set (0.01 sec)
+
+

@@ -45,7 +45,7 @@ class SerialThread(QtCore.QThread):
         while True:
             if self._break:
                 return
-            recv = ["X4M200","RPM","0","State","0x00","LD","0","MAX3266BPM","HR","0","C","0","Oxygen Levels","0", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
+            recv = ["X4M200","RPM","0","State","NO DATA","LD","0","MAX3266BPM","HR","0","C","0","Oxygen Levels","0", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
             radar_data = radardata.print_x4m200_messages(x4m200).split()
             recv[2] = str(int(float(radar_data[1])))
             recv[6] = str(int(float(radar_data[3])))
@@ -57,14 +57,16 @@ class SerialThread(QtCore.QThread):
                 recv[11] = str(int(float(reader[11])))
                 recv[13] = str(int(float(reader[7])))
                 
-            recv[2]="12"
+            """ recv[2]="12"
             recv[6]="9"
             recv[9]="72"
             recv[13]="98"
+            recv[4]="BREATHING" """
             print(radar_data)
+            
+
             recv=",".join(recv)
             print(recv)
-
 
             if(len(recv)>5):
                 self.change_value.emit(recv)
@@ -124,6 +126,8 @@ class HandleScan(QtCore.QThread):
         self.tempval = 0
         self.tempOxyMeterV = 0
         self.startplotting = False
+
+        self.radarstatus = ""
 
         self._gauge1_normalMaxValue = 0
         self._gauge1_normalMinValue = 0
@@ -225,6 +229,8 @@ class HandleScan(QtCore.QThread):
                 self.tempHR = int(data[9])
                 self.tempOxyMeterV = int(data[13])
 
+                self.radarstatus = data[4]
+
                 if(self.startplotting):
                     tinst = int(float(data[6]))
                     if tinst!=0:
@@ -274,6 +280,10 @@ class HandleScan(QtCore.QThread):
                     self._gauge4value.emit(0)
 
                     self.flirreading = 0
+
+                    self.radarstatus = ""
+
+
 
                     self.graphWidgetclear.emit(1)
                     self.GraphX = [0]
@@ -336,7 +346,7 @@ class HandleScan(QtCore.QThread):
                         self._gauge3value.emit(self.tempRPM)
                         time.sleep(1) 
                         self.scanprogress = 10
-                        self.InstructionssetText.emit("Resetting Graphs")
+                        #self.InstructionssetText.emit("Resetting Graphs")
                         self.graphWidgetclear.emit(1)
                         self.GraphX = [0]
                         self.GraphY = [0]
@@ -379,9 +389,11 @@ class HandleScan(QtCore.QThread):
                         time.sleep(1)
 
                 if(self.scanprogress == 10):
-                    self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
+                    
+                    if(self.radarstatus == "NO_MOVEMENT"):
+                        self.InstructionssetText.emit("Start Deep Breathing : Take 6 Deep Breaths")
                     self.startplotting = True 
-                    if(self.GraphX[-1]>25):
+                    if(self.GraphX[-1]>100):
                         self.startplotting = False
                         lc = 0
                         ld = int(abs(max(self.GraphY, key=abs)))
@@ -404,6 +416,9 @@ class HandleScan(QtCore.QThread):
                         self.scanprogress = 11
                     else:
                         time.sleep(1)
+                    #else:
+                    #    self.InstructionssetText.emit("Please Stand Still")
+                    #    time.sleep(0.5)
 
 
                 if (self.scanprogress == 11):
@@ -437,7 +452,7 @@ class HandleScan(QtCore.QThread):
                     self.timelog = [self.localtimer,self.temptimer,self.FinalReadings["temp"],self.hrtimer,self.FinalReadings["hr"],self.oxytimer,self.FinalReadings["o2levels"],self.rpmtimer,self.FinalReadings["rpm"],self.lctimer,self.FinalReadings["ld"],self.testtimer]
                    
 
-                    with open("log.csv","a+",newline = "") as file:
+                    with open("/home/sensor/Desktop/coviduipy/log.csv","a+",newline = "") as file:
                         writer = csv.writer(file)
                         writer.writerow(self.timelog)
                      
@@ -689,7 +704,7 @@ class MainWindow(QWidget):
         self.GraphY = [0,0]
         self.GraphX = [0,0]
         self.graphWidget.setYRange(-10, 10, padding=0)
-        self.graphWidget.setXRange(0, 20, padding=0)
+        self.graphWidget.setXRange(0, 100, padding=0)
 
         self.GraphBorder = QtWidgets.QVBoxLayout()
         self.GraphBorder.addWidget(self.graphWidget)
