@@ -6,8 +6,8 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QAp
 from radialbar import RadialBar
 import serial
 import serial.tools.list_ports
-#from cvwidget import MainWidget as FDWidget
-from facer2 import MainWidget as FRWidget
+from cvwidget import MainWidget as FDWidget
+from cvfrwidget import MainWidget as FRWidget
 import pyqtgraph as pg
 import time
 import radardata
@@ -57,11 +57,11 @@ class SerialThread(QtCore.QThread):
                 recv[11] = str(int(float(reader[11])))
                 recv[13] = str(int(float(reader[7])))
                 
-            recv[2]="12"
+            """ recv[2]="12"
             recv[6]="9"
             recv[9]="72"
             recv[13]="98"
-            recv[4]="BREATHING"
+            recv[4]="BREATHING" """
             print(radar_data)
             
 
@@ -631,7 +631,7 @@ class MainWindow(QWidget):
         self.div = 350
 
             
-        #self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video0")
+        self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video0")
         #self.fr = FRWidget(scale=(self.geometry().height()/self.div), feed="/dev/video3")
         self.fr = FRWidget()
 
@@ -667,7 +667,7 @@ class MainWindow(QWidget):
 
         self.CVPanel = QHBoxLayout()
         self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(220, 10, QtWidgets.QSizePolicy.Maximum))
-        #self.CVPanel.addWidget(self.fd.face_detection_widget)
+        self.CVPanel.addWidget(self.fd.face_detection_widget)
         self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(45,100,QtWidgets.QSizePolicy.MinimumExpanding))
         self.CVPanel.addLayout(self.messagepanellayout)
         self.CVPanel.addSpacerItem(QtWidgets.QSpacerItem(25, 10, QtWidgets.QSizePolicy.Expanding))
@@ -910,8 +910,8 @@ class MainWindow(QWidget):
         self.graphWidget.clear()
         self.graphWidget.plot(self.GraphX, self.GraphY)
 
-        #self.ttemp = self.fd.face_detection_widget.gettemp()
-        self.ttemp = 98
+        self.ttemp = self.fd.face_detection_widget.gettemp()
+        #self.ttemp = 98
         self.scanthread.updatetemp(self.ttemp)
 
 def main():
