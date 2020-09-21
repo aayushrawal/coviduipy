@@ -21,11 +21,18 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 
+import mysql.connector
+import smtplib, ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+
+""" 
 import importlib.util
 
 spec = importlib.util.spec_from_file_location("openvino", "/opt/intel/openvino_2020.4.287/python/python3.7/openvino/inference_engine/__init__.py")
 
-openvino = importlib.util.module_from_spec(spec)
+openvino = importlib.util.module_from_spec(spec) """
 
 DEVICE_KINDS = ['CPU', 'GPU', 'FPGA', 'MYRIAD', 'HETERO', 'HDDL']
 MATCH_ALGO = ['HUNGARIAN', 'MIN_DIST']
@@ -150,7 +157,7 @@ class Visualizer(QtWidgets.QWidget):
 
     def __init__(self, parent=None, scale = 1.3, feed = '/dev/video3'):
         super().__init__(parent)
-        self.varsd = {'input': '/dev/video3', 'match_algo': 'HUNGARIAN', 'd_lm': 'CPU', 'd_fd': 'CPU', 'perf_stats': False, 't_id': 0.3, 'cpu_lib': '', 'run_detector': False, 'fd_input_height': 0, 'timelapse': False, 'm_fd': 'models/face-detection-retail-0004.xml', 't_fd': 0.6, 'crop_height': 0, 'no_show': False, 'exp_r_fd': 1.15, 'fd_input_width': 0, 'allow_grow': False, 'm_lm': 'models/landmarks-regression-retail-0009.xml', 'gpu_lib': '', 'crop_width': 0, 'fg': 'Face_Gallery', 'verbose': True, 'm_reid': 'models/face-reidentification-retail-0095.xml', 'd_reid': 'CPU'}
+        self.varsd = {'input': '/dev/video3', 'match_algo': 'HUNGARIAN', 'd_lm': 'CPU', 'd_fd': 'CPU', 'perf_stats': False, 't_id': 0.3, 'cpu_lib': '', 'run_detector': False, 'fd_input_height': 0, 'timelapse': False, 'm_fd': '/home/sensor/Desktop/coviduipy/models/face-detection-retail-0004.xml', 't_fd': 0.6, 'crop_height': 0, 'no_show': False, 'exp_r_fd': 1.15, 'fd_input_width': 0, 'allow_grow': False, 'm_lm': '/home/sensor/Desktop/coviduipy/models/landmarks-regression-retail-0009.xml', 'gpu_lib': '', 'crop_width': 0, 'fg': 'Face_Gallery', 'verbose': True, 'm_reid': '/home/sensor/Desktop/coviduipy/models/face-reidentification-retail-0095.xml', 'd_reid': 'CPU'}
         
         self.varsd["input"] = feed
         self.frame_processor = FrameProcessor(self.varsd)
@@ -176,6 +183,8 @@ class Visualizer(QtWidgets.QWidget):
         self.modeFR = 0
         self.FRTrainflag = 0
 
+        self.text="None"
+
     def update_fps(self):
         now = time.time()
         self.frame_time = now - self.frame_start_time
@@ -196,8 +205,10 @@ class Visualizer(QtWidgets.QWidget):
         return text_size, baseline
 
     def draw_detection_roi(self, frame, roi, identity):
-        label = self.frame_processor \
+        self.label = self.frame_processor \
             .face_identifier.get_identity_label(identity.id)
+
+        #print(self.label)
 
         # Draw face ROI border
         cv2.rectangle(frame,
@@ -209,11 +220,11 @@ class Visualizer(QtWidgets.QWidget):
         font = cv2.FONT_HERSHEY_SIMPLEX
         text_size = cv2.getTextSize("H1", font, text_scale, 1)
         line_height = np.array([0, text_size[0][1]])
-        text = label
+        self.text = self.label
         #####print(text)
         if identity.id != FaceIdentifier.UNKNOWN_ID:
-            text += ' %.2f%%' % (100.0 * (1 - identity.distance))
-        self.draw_text_with_background(frame, text,
+            self.text += ' %.2f%%' % (100.0 * (1 - identity.distance))
+        self.draw_text_with_background(frame, self.text,
                                        roi.position - line_height * 0.5,
                                        font, scale=text_scale)
 
@@ -298,6 +309,8 @@ class Visualizer(QtWidgets.QWidget):
         if self.image.size() != self.size():
             self.setFixedSize(self.image.size())
 
+        #self.frame_processor.face_identifier.get_identity_label(identity.id)
+
         self.update()
 
 
@@ -350,7 +363,10 @@ class Visualizer(QtWidgets.QWidget):
         painter = QtGui.QPainter()
         painter.begin(self)
         painter.drawImage(0, 0, self.image)
-        self.image = QtGui.QImage()  
+        self.image = QtGui.QImage() 
+
+    def faceID(self):
+        return(self.label) 
 
     def CheckTrainTrigger(self):
         face_identities, unknowns = self.frame_processor.face_identifier.get_matches()
@@ -371,7 +387,22 @@ class Visualizer(QtWidgets.QWidget):
                 name = str(max_label+1)
                 if name:
                     id = self.frame_processor.faces_database.dump_faces(crop, face_identities[i].descriptor, name)
-                    face_identities[i].id = id    
+                    face_identities[i].id = id 
+        #print(self.label)
+        
+        """ mydb = mysql.connector.connect(host = "localhost", user = "root", password = "root", database = "user_info")
+
+        mycursor = mydb.cursor()
+        #timelog = [userid,imgpath,testtimer, FinalResult,FinalReadings["temp"],FinalReadings["hr"],FinalReadings["o2levels"],FinalReadings["rpm"],FinalReadings["ld"]]
+
+        userid = [self.label,"/home/sensor/Desktop/coviduipy/"+self.label+"-0.jpg",None,None,None,None,None,None,None]
+        sql = "INSERT INTO positive (id, imgpath, time, result, temp, hr, o2, rpm, ld ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        mycursor.execute(sql, userid)
+
+        mydb.commit() """
+
+ 
+
 
 class MainWidget(QtWidgets.QWidget):
     def __init__(self,scale = 1.3, parent=None):
@@ -396,7 +427,7 @@ def main():
     main_window = QtWidgets.QMainWindow()
     main_widget = MainWidget()
     main_window.setCentralWidget(main_widget)
-    main_window.resize(320,240)
+    #main_window.resize(320,240)
     main_window.show()
     sys.exit(app.exec_())
     sys.exit()

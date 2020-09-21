@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from time import strftime
 
-#TODO: Condition to enter user data if userid already in database or if test result negative
+#TODO: Condition to enter user data if userid already in database or if test result positive
 
 mydb = mysql.connector.connect(host = "localhost", user = "root", password = "root", database = "user_info")
 
@@ -266,36 +266,26 @@ if res_data!=[]:
                           </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                          <td data-label="User Image" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">
-                              <img alt="" src="https://picsum.photos/200" width="200" style="display: inline-block;" />
-                              </td>
-                        </tr>
-                        <tr>
+
+                         <tr>
                         <td data-label="User ID" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">User ID: {}</td>
                         </tr>
                         <tr>
                         <td data-label="Timer" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">Test Time: {}</td>
                         </tr>
+                        <tr>
+                          <td data-label="User Image" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">
+                              <img alt="" src="https://picsum.photos/200" width="200" style="display: inline-block;" />
+                              </td>
+                        </tr>
+                       
                         </tbody>
                     </table>
                   </td>
                 </tr>
               </table>
               
-              <!--<table width="100%" cellpadding="0" cellspacing="0" border="0" style="min-width:100%;">
-                <tr>
-                  <td width="100%" style="min-width:100%;">
-                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding:30px;background-color:#58585a;color:#ffffff;">
-                          <p style="font-family:Georgia, Arial, sans-serif;font-size:16px;line-height:20px;text-align: center;">2020 @ <a href="www.github.com/aayushrawal">aayushrawal</a></p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>-->
+              
             </td>
           </tr>
         </table>

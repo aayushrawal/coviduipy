@@ -12,16 +12,6 @@ import pyqtgraph as pg
 import time
 import radardata
 import csv
-from datetime import datetime
-
-import mysql.connector
-import smtplib, ssl
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from time import strftime
-#from email.MIMEImage import MIMEImage
-from email.mime.image import MIMEImage
-
 
 
 ports = list(serial.tools.list_ports.comports())
@@ -67,25 +57,21 @@ class SerialThread(QtCore.QThread):
                 recv[11] = str(int(float(reader[11])))
                 recv[13] = str(int(float(reader[7])))
                 
-            """ recv[2]="12"
+            recv[2]="12"
             recv[6]="9"
             recv[9]="72"
             recv[13]="98"
-            recv[4]="BREATHING" """
+            """recv[4]="BREATHING" """
             print(radar_data)
-            
-            
             
 
             recv=",".join(recv)
             print(recv)
-            #print(" ")
 
             if(len(recv)>5):
                 self.change_value.emit(recv)
             else:
                 continue
-            
 
     def stopthread(self):
         self._break =True
@@ -108,9 +94,13 @@ class HandleScan(QtCore.QThread):
 
     checktraintrigger = QtCore.pyqtSignal(int)
 
-    #restraintrig = QtCore.pyqtSignal(int)
+    restraintrig = QtCore.pyqtSignal(int)
 
-    debugWindowsetText = QtCore.pyqtSignal(str)
+    #debugWindowsetText = QtCore.pyqtSignal(str)
+
+    radarWindowsetText = QtCore.pyqtSignal(str)
+
+    toggleRadar = QtCore.pyqtSignal(int)
 
     usermsgsetText = QtCore.pyqtSignal(str)
 
@@ -171,10 +161,6 @@ class HandleScan(QtCore.QThread):
     def updatetemp(self, tempval=None):
         if tempval != None:
             self.tempval = tempval
-
-    def updatefaceID(self, faceID=None):
-        if faceID !=None:
-            self.faceID = faceID
 
     def startscan(self,startscan,scanmode):
         #self.StartSerialThread()
@@ -249,7 +235,14 @@ class HandleScan(QtCore.QThread):
 
                 self.radarstatus = data[4]
 
-                self.debugWindowsetText.emit("Radar Info: "+self.radarstatus)
+                if(self.radarstatus == "NO_MOVEMENT"):
+                    self.radartext = "Start Deep Breathing and take 6 Deep Breaths"
+                elif(self.radarstatus == "MOVEMENT" or self.radarstatus == "MOVEMENT_TRACKING"):
+                    self.radartext = "Please Stand Still"
+                elif(self.radarstatus == "BREATHING"):
+                    self.radartext = "Logging Breathing Data"
+                else: self.radartext = "Initialising Radar"
+                self.radarWindowsetText.emit("Radar Info: " + self.radartext)
 
                 if(self.startplotting):
                     tinst = int(float(data[6]))
@@ -312,7 +305,7 @@ class HandleScan(QtCore.QThread):
                     time.sleep(2)
                     self.scanprogress = 2
 
-                    #self.restraintrig.emit(1)
+                    self.restraintrig.emit(1)
                     '''
                     self.fr.face_detection_widget.resMeanFRSession()
                     '''
@@ -320,7 +313,6 @@ class HandleScan(QtCore.QThread):
                     self.zerotrigger = False
 
                     self.localtimer = time.strftime("%X %x")
-                    self.dbtime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     self.timer = time.time()
                     self.temptimer = 0
                     self.hrtimer = 0
@@ -360,6 +352,7 @@ class HandleScan(QtCore.QThread):
                     self.scanprogress = 6
 
                 if(self.scanprogress == 6):
+                    self.toggleRadar.emit(0)
                     if(self.tempRPM > 5):
                         self.FinalReadings["rpm"] = self.tempRPM
                         self.InstructionssetText.emit("RPM Captured Succesfully")
@@ -367,7 +360,7 @@ class HandleScan(QtCore.QThread):
                         self._gauge3value.emit(self.tempRPM)
                         time.sleep(1) 
                         self.scanprogress = 10
-                        self.InstructionssetText.emit("Resetting Graphs")
+                        #self.InstructionssetText.emit("Resetting Graphs")
                         self.graphWidgetclear.emit(1)
                         self.GraphX = [0]
                         self.GraphY = [0]
@@ -411,7 +404,8 @@ class HandleScan(QtCore.QThread):
 
                 if(self.scanprogress == 10):
                     
-                    self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
+                    #if(self.radarstatus == "NO_MOVEMENT"):
+                    self.InstructionssetText.emit("Start Deep Breathing : Take 6 Deep Breaths")
                     self.startplotting = True 
                     if(self.GraphX[-1]>100):
                         self.startplotting = False
@@ -432,6 +426,7 @@ class HandleScan(QtCore.QThread):
                         self.lctimer = round((time.time() - self.timer),2)
                         self._gauge4value.emit(int(lc))
                         self.FinalReadings["ld"] = int(lc)
+                        self.toggleRadar.emit(1)
                         time.sleep(1)
                         self.scanprogress = 11
                     else:
@@ -442,462 +437,39 @@ class HandleScan(QtCore.QThread):
 
 
                 if (self.scanprogress == 11):
-
-                    """ mydb = mysql.connector.connect(host = "localhost", user = "root", password = "root", database = "user_info")
-                    print("1")
-                    
-                    mycursor = mydb.cursor()
-                    print("2")
-                    userid = [self.faceID,str("/home/sensor/Desktop/coviduipy/"+self.faceID+"-0.jpg"),self.localtimer, "Positive",self.FinalReadings["temp"],self.FinalReadings["hr"],self.FinalReadings["o2levels"],self.FinalReadings["rpm"],self.FinalReadings["ld"]]
-                    print("3")
-
-                    sql = "INSERT INTO positive (id, imgpath, time, result, temp, hr, o2, rpm, ld ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"
-
-                    print("4")
-
-                    mycursor.execute(sql, userid)
-                    print("5")
-                    mydb.commit() """
-
                     self.thread.quit()
                     self.StartScan = False
                     self.scanprogress = 0
                     self.startplotting = False
                     self.GraphY = [0]
                     self.GraphX = [0]
-                    #self.emaildata = {}
-                    #self.emaildata["emailo2"] = str(self.FinalReadings["o2levels"])
-                    #self.emaildata["emailtemp"] = str(self.FinalReadings["temp"])
-                    #self.emaildata["emailrpm"] = str(self.FinalReadings["rpm"])
-                    #self.emaildata["emailld"] = str(self.FinalReadings["ld"])
-                    #self.emaildata["emailhr"] = str(self.FinalReadings["hr"])
-                    
-
                     status = 1
                     if(self.FinalReadings["o2levels"]>self._gauge2_normalMaxValue) or (self.FinalReadings["o2levels"]<self._gauge2_normalMinValue):
                         status = 0
-                        #self.emaildata["emailo2"] = "<p style=\"color=red\">"+strself.emaildata["emailo2"]+"</p>"
                     if(self.FinalReadings["temp"]>99) or (self.FinalReadings["temp"]<90):
                         status = 0
-                        #self.emaildata["emailtemp"] = "<p style=\"color=red\">"+self.emaildata["emailtemp"]+"</p>"
                     if(self.FinalReadings["rpm"]>self._gauge3_normalMaxValue) or (self.FinalReadings["rpm"]<self._gauge3_normalMinValue):
                         status = 0
-                        #self.emaildata["emailrpm"] = "<p style=\"color=red\">"+self.emaildata["emailrpm"]+"</p>"
                     if (self.FinalReadings["ld"] > self._gauge4_normalMaxValue) or (self.FinalReadings["ld"] < self._gauge4_normalMinValue):
                         status = 0
-                        #self.emaildata["emailld"] = "<p style=\"color=red\">"+self.emaildata["emailld"]+"</p>"
                     if (self.FinalReadings["hr"] > self._gauge1_normalMaxValue) or (
                             self.FinalReadings["hr"] < self._gauge1_normalMinValue):
                         status = 0
-                        #self.emaildata["emailhr"] = "<p style=\"color=red\">"+self.emaildata["emailhr"]+"</p>"
                     self.InstructionssetText.emit("Scan Completed")
                     time.sleep(1)
-                    
-                    
-                   
-                    
                     if(status==0):
                         self.InstructionssetText.emit("Test Positive\nSTOP")
-                        #self.InstructionssetText.emit("User Identified as :",self.faceID)
-                        #time.sleep(2)
-                        self.result = "Positive"
                         self.checktraintrigger.emit(1)
-
                     elif status == 1:
                         self.InstructionssetText.emit("Test Negative\nGo")
-                        self.result = "Negative"
-
                     self.testtimer = round((time.time() - self.timer),2)
                     
-                    self.timelog = [self.dbtime,self.temptimer,self.FinalReadings["temp"],self.hrtimer,self.FinalReadings["hr"],self.oxytimer,self.FinalReadings["o2levels"],self.rpmtimer,self.FinalReadings["rpm"],self.lctimer,self.FinalReadings["ld"],self.testtimer]
+                    self.timelog = [self.localtimer,self.temptimer,self.FinalReadings["temp"],self.hrtimer,self.FinalReadings["hr"],self.oxytimer,self.FinalReadings["o2levels"],self.rpmtimer,self.FinalReadings["rpm"],self.lctimer,self.FinalReadings["ld"],self.testtimer]
                    
 
                     with open("/home/sensor/Desktop/coviduipy/log.csv","a+",newline = "") as file:
                         writer = csv.writer(file)
                         writer.writerow(self.timelog)
-
-                    mydb = mysql.connector.connect(host = "localhost", user = "root", password = "root", database = "user_info")
-                   
-                    
-                    mycursor = mydb.cursor()
-                
-                    
-                    
-                    #timelog = [userid,imgpath,testtimer, FinalResult,FinalReadings["temp"],FinalReadings["hr"],FinalReadings["o2levels"],FinalReadings["rpm"],FinalReadings["ld"]]
-                    userid = [int(self.faceID),"/home/sensor/Desktop/coviduipy/Face_Gallery/"+self.faceID+"-0.jpg",self.dbtime, self.result,int(self.FinalReadings["temp"]),int(self.FinalReadings["hr"]),int(self.FinalReadings["o2levels"]),int(self.FinalReadings["rpm"]),int(self.FinalReadings["ld"])]
-                    
-                    sql = "INSERT INTO positive (id, imgpath, time, result, temp, hr, o2, rpm, ld ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"
-                    
-                    mycursor.execute("SELECT count(id) from positive WHERE id=%s;",(self.faceID,))
-                    userstatus = mycursor.fetchall()
-
-                    #while True: print(userstatus)
-
-                    if self.result=="Positive" or userstatus[0][0]!=0:
-                        mycursor.execute(sql, userid)
-                        mydb.commit()
-                    #while True: print(sql)
-
-                    
-
-
-                    mycursor.execute("SELECT * FROM positive where id IN (SELECT id FROM positive group by ID having count(id)>2);")
-
-
-                    res_data = mycursor.fetchall()
-
-                    
-                    
-
-
-                    if res_data!=[]:
-
-                        res_vals = {}
-                        res_vals["temp"]=[]
-                        res_vals["o2"]=[]
-                        res_vals["hr"]=[]
-                        res_vals["ld"]=[]
-                        res_vals["rpm"]=[]
-
-                        
-                        
-                            
-                        for i in range(0,3):
-                            if (res_data[i][6] > self._gauge2_normalMaxValue) or (res_data[i][6] < self._gauge2_normalMinValue):
-                                #o2str="""<p style="color=red !important;">"""+str(res_data[i][6])+"</p>"
-                                o2str="\""+str(res_data[i][6])+"\""
-                            else:
-                                o2str=str(res_data[i][6])
-                            res_vals["o2"].append(o2str)
-                            #res_data[i][6] = "<p style=\"color=red\">"+str(res_data[i][6])+"</p>"
-                            if (res_data[i][4] > 99) or (res_data[i][4] < 90):
-                                tempstr="\""+str(res_data[i][4])+"\""
-                                #tempstr="""<p style="color=red !important;">"""+str(res_data[i][4])+"</p>"
-                            else:
-                                tempstr=str(res_data[i][4])
-                            res_vals["temp"].append(tempstr)
-                            #res_data[i][4] = "<p style=\"color=red\">"+str(res_data[i][4])+"</p>"
-                            if (res_data[i][7] > self._gauge3_normalMaxValue) or (res_data[i][7] < self._gauge3_normalMinValue):
-                                #rpmstr="""<p style="color=red !important;">"""+str(res_data[i][7])+"</p>"
-                                rpmstr="\""+str(res_data[i][7])+"\""
-                            else:
-                                rpmstr=str(res_data[i][7])
-                            res_vals["rpm"].append(rpmstr)
-                            #res_data[i][7] = "<p style=\"color=red\">"+str(res_data[i][7])+"</p>"
-                            
-                            if (res_data[i][8] > self._gauge4_normalMaxValue) or (res_data[i][8] < self._gauge4_normalMinValue):
-                                #ldstr="""<p style="color=red !important;">"""+str(res_data[i][8])+"</p>"
-                                ldstr="\""+str(res_data[i][8])+"\""
-                            else:
-                                ldstr=str(res_data[i][8])
-                            res_vals["ld"].append(ldstr)
-                            #res_data[i][8] = "<p style=\"color=red\">"+str(res_data[i][8])+"</p>"
-                            if (res_data[i][5] > self._gauge1_normalMaxValue) or (res_data[i][5] < self._gauge1_normalMinValue):
-                                hrstr="\""+str(res_data[i][5])+"\""
-                                #hrstr="""<p style="color=red !important;">"""+str(res_data[i][5])+"</p>"
-                            else:
-                                hrstr=str(res_data[i][5])
-                            res_vals["hr"].append(hrstr)
-                            #res_data[i][5] = "<p style=\"color=red\">"+str(res_data[i][5])+"</p>"
-
-                       
-
-                       
-                        sender_email = "coviduipy@gmail.com"
-                        receiver_email = "aayushrawal98@gmail.com"
-                        password = "sensor1!" #input("Type your password and press enter:")
-
-                        message = MIMEMultipart("alternative")
-                        message["Subject"] = "Test Report"
-                        message["From"] = sender_email
-                        message["To"] = receiver_email
-
-                        # Create the plain-text and HTML version of your message
-
-                        html = """\
-                        <!DOCTYPE html>
-                        <html>
-                            <head>
-                            <meta charset="utf-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <title>One column layout</title>
-                            <style>
-                                html,body,table,tbody,tr,td,div,p,ul,ol,li,h1,h2,h3,h4,h5,h6 
-                                {{
-                                margin: 0;
-                                padding: 0;
-                                }}
-                                
-                                body {{
-                                margin: 0;
-                                padding: 0;
-                                font-size: 0;
-                                line-height: 0;
-                                -ms-text-size-adjust: 100%;
-                                -webkit-text-size-adjust: 100%;
-                                }}
-                                
-                                table {{
-                                border-spacing: 0;
-                                mso-table-lspace: 0pt;
-                                mso-table-rspace: 0pt;
-                                }}
-                                
-                                table td {{
-                                border-collapse: collapse;
-                                }}
-                                
-                                .ExternalClass {{
-                                width: 100%;
-                                }}
-                                
-                                .ExternalClass,
-                                .ExternalClass p,
-                                .ExternalClass span,
-                                .ExternalClass font,
-                                .ExternalClass td,
-                                .ExternalClass div {{
-                                line-height: 100%;
-                                }}
-                                /* Outermost container in Outlook.com */
-                                
-                                .ReadMsgBody {{
-                                width: 100%;
-                                }}
-                                
-                                img {{
-                                -ms-interpolation-mode: bicubic;
-                                }}
-                            </style>
-                            <style>
-                                .container600 {{
-                                width: 600px;
-                                max-width: 100%;
-                                }}
-                                
-                                @media all and (max-width: 600px) {{
-                                .container600 {{
-                                    width: 100% !important;
-                                }}
-                                }}
-                                
-                                @media all and (max-width: 599px) {{
-
-                                .container600 {{
-                                    width: 100% !important;
-                                }}
-
-                                .smarttable {{
-                                    border: 0;
-                                    
-                                    
-                                }}
-                                .smarttable thead {{
-                                            
-                                    max-height:0px;
-                                }}
-                                .smarttable tr {{
-                                    display: block;
-                                    width:90%;
-                                    margin:20px auto;
-
-                                    margin-bottom: 10px !important;
-                                }}
-                                .smarttable td {{
-                                    border-bottom: 1px solid #ddd;
-                                    display: block;
-                                    font-size: 15px;
-                                    text-align: right;
-                                    background: #fdfdfd;
-                                }}
-                                .smarttable td img {{
-                                    border-bottom: 1px solid #ddd;
-                                    display: inline-block;
-                                    font-size: 15px;
-                                    text-align: right;
-                                }}
-                                .smarttable td:before {{
-                                    content: attr(data-label);
-                                    float: left;self.emaildata["emailtemp"]
-                                    font-weight: bold;
-                                    text-transform: uppercase;
-                                }}
-
-                                }}
-                            </style>
-
-                            <!--[if gte mso 9]>
-                                <style>
-                                    .ol {{
-                                        width: 100%;
-                                    }}
-                                </style>
-                            <![endif]-->
-                            </head>
-                            <body style="background-color: #f4f4f4;">
-                            <center>
-
-                                <!--[if gte mso 9]><table width="600" cellpadding="0" cellspacing="0"><tr><td>
-                                            <![endif]-->
-                                <table class="container600" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:calc(100%);max-width:calc(800px);margin: 0 auto;">
-                                <tr>
-                                    <td width="100%" style="text-align: left;">
-                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="min-width:100%;">
-                                        <tr>
-                                        <td width="100%" style="min-width:100%;background-color:#ffffff;padding:30px;">
-                                            <h1 style="font-family:Arial;font-size:28px;line-height:32px;">Test Report</h1>
-                                        </td>
-                                        </tr>
-                                    </table>
-                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="min-width:100%;">
-                                        <tr>
-                                        <td style="background-color:#F8F7F0;padding:20px;">
-
-                                            <table class="smarttable" width="100%" cellpadding="0" cellspacing="0" style="min-width:100%;">
-                                                <thead>
-                                                    <tr>
-                                                    <th scope="col" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;line-height:30px"> Vitals</th>
-                                                    <th scope="col" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;line-height:30px">Scan 1</th>
-                                                    <th scope="col" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;line-height:30px">Scan 2</th>
-                                                    <th scope="col" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;line-height:30px">Scan 3</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                    <th data-label="Name" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">Thermal Temperature</th>
-                                                    <td data-label="Scan 1" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 2" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 3" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    
-                                                    </tr>
-                                                    <tr>
-                                                    <th data-label="Name" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">Heart Rate</th>
-                                                    <td data-label="Scan 1" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 2" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 3" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    </tr>
-                                                    <tr>
-                                                    <th data-label="Name" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">Blood Oxygen</th>
-                                                    <td data-label="Scan 1" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 2" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 3" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    </tr>
-                                                    <tr>
-                                                    <th data-label="Name" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">Breath Per Minute</th>
-                                                    <td data-label="Scan 1" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 2" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 3" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    </tr>
-                                                    <tr>
-                                                    <th data-label="Name" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">Lung Capacity</th>
-                                                    <td data-label="Scan 1" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 2" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 3" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    </tr>
-                                                    <tr>
-                                                    <th data-label="Name" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">Test Result</th>
-                                                    <td data-label="Scan 1" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 2" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    <td data-label="Scan 3" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">{}</td>
-                                                    </tr>
-                                                </tbody>                         
-                                            </table>
-                                        </td>
-                                        </tr>
-                                    </table>
-
-                                    <table width="100%" cellpadding="0" cellspacing="0" style="min-width:100%;">
-                                        <tr>
-                                        <td style="background-color:#FFFFFF;padding:20px;">
-                                            <table class="smarttable" width="100%" cellpadding="0" cellspacing="0" style="min-width:100%;">
-                                                <thead>
-                                                <tr>
-                                                <td data-label="Note" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 12px; line-height:20px;">Please note values denoted with " " are not normal.</td>
-                                                </tr>
-                                            
-                                                
-                                                </thead>
-                                                
-                                           
-                                                
-                                                <tbody>
-                                                
-                                                <tr>
-                                                <td valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">User Image:</td>
-                                                </tr>
-
-                                                <tr>
-                                                
-
-                                                    <td data-label="User Image" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">
-                                                    <img alt="" src="cid:image1"  style="display: inline-block; width: 100px;" />
-                                                    </td>
-                                                </tr>
-
-                                                <tr>
-                                                <td data-label="User ID" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">User ID: {}</td>
-                                                </tr>
-                                                <tr>
-                                                <td data-label="Timer" valign="top" style="padding:5px; font-family: Arial,sans-serif; font-size: 16px; line-height:20px;">Test Time: {}</td>
-                                                </tr>
-                                                
-                                            
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                        </tr>
-                                    </table>
-                                    
-                                    
-                                    </td>
-                                </tr>
-                                </table>
-
-                                <!--[if gte mso 9]></td></tr></table>
-                                            <![endif]-->
-                            </center>
-                            </body>
-                        </html>
-                        """.format(res_vals["temp"][0],res_vals["temp"][1],res_vals["temp"][2],res_vals["hr"][0],res_vals["hr"][1],res_vals["hr"][2],res_vals["o2"][0],res_vals["o2"][1],res_vals["o2"][2],res_vals["rpm"][0],res_vals["rpm"][1],res_vals["rpm"][2],res_vals["ld"][0],res_vals["ld"][1],res_vals["ld"][2],res_data[0][3],res_data[1][3],res_data[2][3],res_data[0][0],res_data[0][2].strftime('%Y-%m-%d %H:%M:%S'))
-
-                        #
-                        #format(res_data[0][4],res_data[1][4],res_data[2][4],res_data[0][5],res_data[1][5],res_data[2][5],res_data[0][6],res_data[1][6],res_data[2][6],res_data[0][7],res_data[1][7],res_data[2][7],res_data[0][8],res_data[1][8],res_data[2][8],res_data[0][3],res_data[1][3],res_data[2][3],res_data[0][0],res_data[0][2].strftime('%Y-%m-%d %H:%M:%S'))
-
-                        # Turn these into plain/html MIMEText objects
-                        part1 = MIMEText(html, "html")
-
-
-                        # Add HTML/plain-text parts to MIMEMultipart message
-                        # The email client will try to render the last part first
-                        message.attach(part1)
-
-                        imgfile = res_data[0][1]
-
-                        #fp=open(imgfile,"rb")
-                        fp=open(imgfile,"rb")
-                        emailimage = MIMEImage(fp.read())
-                        fp.close()
-
-                        emailimage.add_header('Content-ID','<image1>')
-                        message.attach(emailimage)
-
-                        # Create secure connection with server and send email
-                        context = ssl.create_default_context()
-                        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-                            server.login(sender_email, password)
-                            server.sendmail(
-                                sender_email, receiver_email, message.as_string()
-                            )
-
-
-
-                        self.InstructionssetText.emit("Email Sent")
-
-                        sql = "DELETE FROM positive WHERE id={}".format(res_data[0][0])
-
-                        mycursor.execute(sql)
-
-                        mydb.commit()
                      
 
                     self.FinalReadings["o2levels"] = 0
@@ -917,8 +489,6 @@ class HandleScan(QtCore.QThread):
 
 
 class MainWindow(QWidget):
-
-    user_name = QtCore.pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -1056,30 +626,41 @@ class MainWindow(QWidget):
         #GraphicsWindow.setGeometry(vrectGW);
 
 
-        self.debugWindow = QtWidgets.QLabel()
+        """ self.debugWindow = QtWidgets.QLabel()
         self.debugWindow.setSizePolicy(
             QtWidgets.QSizePolicy.Maximum,
             QtWidgets.QSizePolicy.Fixed
         )
         #debugWindow.setSizePolicy(QtWidgets.QSizePolicy.Expanding,QtWidgets.QSizePolicy.Fixed)
         self.debugWindow.setStyleSheet("background-color: white; padding: 4px; qproperty-alignment: AlignRight; margin-left:50%;")
-        self.debugWindow.setText("Radar Window")
+        self.debugWindow.setText("Debug Window")
         self._debugWindow = QtWidgets.QHBoxLayout()
         self._debugWindow.addSpacerItem(QtWidgets.QSpacerItem(250,10,QtWidgets.QSizePolicy.Expanding))
-        self._debugWindow.addWidget(self.debugWindow)
+        self._debugWindow.addWidget(self.debugWindow) """
+
+        self.radarWindow = QtWidgets.QLabel()
+        self.radarWindow.setSizePolicy(
+            QtWidgets.QSizePolicy.Maximum,
+            QtWidgets.QSizePolicy.Fixed
+        )
+        #debugWindow.setSizePolicy(QtWidgets.QSizePolicy.Expanding,QtWidgets.QSizePolicy.Fixed)
+        self.radarWindow.setStyleSheet("background-color: white; padding: 4px; qproperty-alignment: AlignRight; margin-left:50%;")
+        self.radarWindow.setText("Radar Info:")
+        self._radarWindow = QtWidgets.QHBoxLayout()
+        self._radarWindow.addSpacerItem(QtWidgets.QSpacerItem(250,10,QtWidgets.QSizePolicy.Expanding))
+        self._radarWindow.addWidget(self.radarWindow)
 
 
-        """ script_dir = path.dirname(path.realpath(__file__))
+        script_dir = path.dirname(path.realpath(__file__))
         cascade_filepath = path.join(script_dir, '/home/sensor/Desktop/coviduipy/haarcascade_frontalface_default.xml')
-        cascade_filepath = path.abspath(cascade_filepath) """
+        cascade_filepath = path.abspath(cascade_filepath)
 
         self.div = 350
 
             
-        self.fd = FDWidget(scale=(self.geometry().height()/self.div), feed="/dev/video0")
-        #self.fr = FRWidget(scale=(self.geometry().height()/self.div), feed="/dev/video3")
-        self.fr = FRWidget()
-        #print(self.fr.face_detection_widget.text)
+        self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video0")
+        self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video2")
+
 
         self.usermsg = QtWidgets.QLabel()
         self.usermsg.setText("Max Temperature: 0")
@@ -1094,8 +675,7 @@ class MainWindow(QWidget):
         self.Instructions.setStyleSheet("color: orange; padding-bottom:10px; text-align: center;")
 
         self.fr_id = QtWidgets.QLabel()
-        #self.fr_id.setText("Last Record Sno: None")
-        self.fr_id.setText("")
+        self.fr_id.setText("Last Record Sno: None")
         self.fr_id.setFont(self.myfont)
         self.fr_id.setAlignment(QtCore.Qt.AlignCenter)
         self.fr_id.setStyleSheet("color: orange; padding-bottom:10px; text-align: center;")
@@ -1183,7 +763,8 @@ class MainWindow(QWidget):
         self.GraphicsWindow.addSpacerItem(QtWidgets.QSpacerItem(250, 40, QtWidgets.QSizePolicy.Maximum))
         self.GraphicsWindow.addLayout(self.controls)
         self.GraphicsWindow.addStretch()
-        self.GraphicsWindow.addLayout(self._debugWindow)
+        #self.GraphicsWindow.addLayout(self._debugWindow)
+        self.GraphicsWindow.addLayout(self._radarWindow)
 
         self._gauge1.value = self.gtv
         self._gauge2.value = self.gtv
@@ -1229,8 +810,11 @@ class MainWindow(QWidget):
     def setmsg(self,str):
         self.Instructions.setText(str)
 
-    def setdebugwin(self,str):
-        self.debugWindow.setText(str)
+    """ def setdebugwin(self,str):
+        self.debugWindow.setText(str) """
+
+    def setradarwin(self, str):
+        self.radarWindow.setText(str)
 
     def RunScanM(self):
         self.scanthread.start()
@@ -1273,11 +857,13 @@ class MainWindow(QWidget):
     def trigFRTrain(self,val):
         if val:
             self.fr.face_detection_widget.CheckTrainTrigger()
-        #return(self.fr.face_detection_widget.faceID())
 
-    """ def resFRTraintrig(self,val):
+    def resFRTraintrig(self,val):
         if val:
-            self.fr.face_detection_widget.resMeanFRSession() """
+            self.fr.face_detection_widget.resMeanFRSession()
+
+    def toggleRadarWidget(self):
+        self.radarWindow.setHidden(not self.radarWindow.ishidden())
 
     def connectscansignals(self):
         self.scanthread._gauge1value.connect(self.setgauge1val)
@@ -1285,12 +871,14 @@ class MainWindow(QWidget):
         self.scanthread._gauge3value.connect(self.setgauge3val)
         self.scanthread._gauge4value.connect(self.setgauge4val)
         self.scanthread.InstructionssetText.connect(self.setinstruction)
-        self.scanthread.debugWindowsetText.connect(self.setdebugwin)
+        #self.scanthread.debugWindowsetText.connect(self.setdebugwin)
+        self.scanthread.radarWindowsetText.connect(self.setradarwin)
+        self.scanthread.toggleRadar.connect(self.toggleRadarWidget)
         self.scanthread.usermsgsetText.connect(self.setlivetemp)
         self.scanthread.graphWidgetclear.connect(self.cleargraph)
         self.scanthread.graphdata.connect(self.setgraph)
         self.scanthread.checktraintrigger.connect(self.trigFRTrain)
-        #self.scanthread.restraintrig.connect(self.resFRTraintrig)
+        self.scanthread.restraintrig.connect(self.resFRTraintrig)
 
 
 
@@ -1346,8 +934,10 @@ class MainWindow(QWidget):
         self.i2.setFont(sclabelfont)
         self.Instructions.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
         self.usermsg.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
-        self.debugWindow.setMaximumSize((painter.device().width() * 0.75), painter.device().height()*0.03)
-        self.debugWindow.setMinimumSize((painter.device().width() * 0.75), painter.device().height()*0.03)
+        """ self.debugWindow.setMaximumSize((painter.device().width() * 0.75), painter.device().height()*0.03)
+        self.debugWindow.setMinimumSize((painter.device().width() * 0.75), painter.device().height()*0.03) """
+        self.radarWindow.setMaximumSize((painter.device().width() * 0.75), painter.device().height()*0.03)
+        self.radarWindow.setMinimumSize((painter.device().width() * 0.75), painter.device().height()*0.03)
         self.GraphBorder.setGeometry(QtCore.QRect(painter.device().width()*0.62, painter.device().height()*0.55, painter.device().width()*0.35, painter.device().height()*0.35))
         self.fr.setGeometry(QtCore.QRect(painter.device().width()*0.25, painter.device().height()*0.55, painter.device().width()*0.35, painter.device().height()*0.35))
         #self.fd.face_detection_widget.setGeometry(QtCore.QRect(painter.device().width()*0.25, painter.device().height()*0.06, painter.device().width()*0.35, painter.device().height()*0.35))
@@ -1359,12 +949,7 @@ class MainWindow(QWidget):
         self.graphWidget.plot(self.GraphX, self.GraphY)
 
         self.ttemp = self.fd.face_detection_widget.gettemp()
-        #self.ttemp = 100
         self.scanthread.updatetemp(self.ttemp)
-
-        self.faceID = self.fr.face_detection_widget.faceID()
-        self.scanthread.updatefaceID(self.faceID)
-
 
 def main():
     try:
@@ -1373,14 +958,12 @@ def main():
         startt = time.strftime("%X %x")
         app = QApplication(sys.argv)
         ex = MainWindow()
-        #self.frID = ex.fr.face_detection_widget.faceID()
-        #self.frID.connect(self.trigFRTrain) 
         ex.show()
         sys.exit(app.exec_())
         sys.exit(app.scanthread.StopSerialThread())
     finally:
         execution_time = round((time.time() - start),2)
-        with open("/home/sensor/Desktop/coviduipy/totalexec.csv","a+",newline = "") as file:
+        with open("totalexec.csv","a+",newline = "") as file:
                         writer = csv.writer(file)
                         writer.writerow([startt, execution_time])
 

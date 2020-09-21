@@ -119,9 +119,9 @@ class RecordVideo(QtCore.QObject):
 
 
 class FaceDetectionWidget(QtWidgets.QWidget):
-    def __init__(self, haar_cascade_filepath, parent=None, scale=1.3):
+    def __init__(self, parent=None, scale=1.3):
         super().__init__(parent)
-        self.classifier = cv2.CascadeClassifier(haar_cascade_filepath)
+        #self.classifier = cv2.CascadeClassifier(haar_cascade_filepath)
         self.image = QtGui.QImage()
         self._red = (0, 0, 255)
         self._green = (0, 255, 0)
@@ -271,10 +271,10 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
 
 class MainWidget(QtWidgets.QWidget):
-    def __init__(self, haarcascade_filepath, parent=None, scale=1.3, feed=0):
+    def __init__(self, parent=None, scale=1.3, feed=0):
         super().__init__(parent)
-        fp = haarcascade_filepath
-        self.face_detection_widget = FaceDetectionWidget(fp,scale=scale)
+        #fp = haarcascade_filepath
+        self.face_detection_widget = FaceDetectionWidget(scale=scale)
         self.face_detection_widget.vsc = scale        
         self.record_video = RecordVideo(feed)
         self.image_data_slot = self.face_detection_widget.image_data_slot
@@ -284,18 +284,18 @@ class MainWidget(QtWidgets.QWidget):
         self.record_video.start_recording()
         self.setLayout(layout)
 
-def main(haar_cascade_filepath):
+def main():
     app = QtWidgets.QApplication(sys.argv)
     main_window = QtWidgets.QMainWindow()
-    main_widget = MainWidget(haar_cascade_filepath)
+    main_widget = MainWidget()
     main_window.setCentralWidget(main_widget)
     main_window.show()
     sys.exit(app.exec_())
 
 
 if __name__ == '__main__':
-    script_dir = path.dirname(path.realpath(__file__))
-    cascade_filepath = path.join(script_dir,'haarcascade_frontalface_default.xml')
+    #script_dir = path.dirname(path.realpath(__file__))
+    #cascade_filepath = path.join(script_dir,'haarcascade_frontalface_default.xml')
 
-    cascade_filepath = path.abspath(cascade_filepath)
-    main(cascade_filepath)
+    #cascade_filepath = path.abspath(cascade_filepath)
+    main()
