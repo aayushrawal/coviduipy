@@ -94,7 +94,7 @@ class HandleScan(QtCore.QThread):
 
     checktraintrigger = QtCore.pyqtSignal(int)
 
-    #restraintrig = QtCore.pyqtSignal(int)
+    restraintrig = QtCore.pyqtSignal(int)
 
     debugWindowsetText = QtCore.pyqtSignal(str)
 
@@ -292,7 +292,7 @@ class HandleScan(QtCore.QThread):
                     time.sleep(2)
                     self.scanprogress = 2
 
-                    #self.restraintrig.emit(1)
+                    self.restraintrig.emit(1)
                     '''
                     self.fr.face_detection_widget.resMeanFRSession()
                     '''
@@ -632,8 +632,8 @@ class MainWindow(QWidget):
 
             
         self.fd = FDWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video0")
-        #self.fr = FRWidget(scale=(self.geometry().height()/self.div), feed="/dev/video3")
-        self.fr = FRWidget()
+        self.fr = FRWidget(cascade_filepath, scale=(self.geometry().height()/self.div), feed="/dev/video2")
+
 
         self.usermsg = QtWidgets.QLabel()
         self.usermsg.setText("Max Temperature: 0")
@@ -827,9 +827,9 @@ class MainWindow(QWidget):
         if val:
             self.fr.face_detection_widget.CheckTrainTrigger()
 
-    """ def resFRTraintrig(self,val):
+    def resFRTraintrig(self,val):
         if val:
-            self.fr.face_detection_widget.resMeanFRSession() """
+            self.fr.face_detection_widget.resMeanFRSession()
 
     def connectscansignals(self):
         self.scanthread._gauge1value.connect(self.setgauge1val)
@@ -842,7 +842,7 @@ class MainWindow(QWidget):
         self.scanthread.graphWidgetclear.connect(self.cleargraph)
         self.scanthread.graphdata.connect(self.setgraph)
         self.scanthread.checktraintrigger.connect(self.trigFRTrain)
-        #self.scanthread.restraintrig.connect(self.resFRTraintrig)
+        self.scanthread.restraintrig.connect(self.resFRTraintrig)
 
 
 
@@ -911,7 +911,6 @@ class MainWindow(QWidget):
         self.graphWidget.plot(self.GraphX, self.GraphY)
 
         self.ttemp = self.fd.face_detection_widget.gettemp()
-        #self.ttemp = 98
         self.scanthread.updatetemp(self.ttemp)
 
 def main():
