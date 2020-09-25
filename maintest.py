@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QAp
 from radialbar import RadialBar
 import serial
 import serial.tools.list_ports
-from cvfdwidget import MainWidget as FDWidget
+from cvwidget import MainWidget as FDWidget
 from cvfrwidget import MainWidget as FRWidget
 import pyqtgraph as pg
 import time
@@ -155,6 +155,10 @@ class HandleScan(QtCore.QThread):
         self._gauge4_normalMaxValue = 0
         self._gauge4_normalMinValue = 0
 
+        self.rpmlist = []
+        self.rpmtrig = False
+        self.lcflag = 0
+
         self.StartSerialThread()
 
 
@@ -249,6 +253,8 @@ class HandleScan(QtCore.QThread):
 
                 self.radarstatus = data[4]
 
+                self.tinst = int(float(data[6]))
+
                 #self.debugWindowsetText.emit("Radar Info: "+self.radarstatus)
 
                 if(self.startplotting):
@@ -259,7 +265,19 @@ class HandleScan(QtCore.QThread):
                     if self.zerotrigger == True:
                         self.GraphY.append(tinst)
                         self.GraphX.append(self.GraphX[-1] + 1)
-                        self.triggraphupdate() #stopped graph plotting for testing
+                    self.triggraphupdate() #stopped graph plotting for testing
+
+                elif(self.rpmtrig):
+
+                    if(self.tempRPM>5 and len(self.rpmlist)<6):
+
+                       
+
+                        self.rpmlist.append(self.tempRPM)
+                        """ if(count(self.rpmlist>5)):
+                            self.rpmtrig = False """
+                    else: pass
+
 
                 elif(self.scanprogress == 3):
                     temptemp = self.tempval
@@ -316,7 +334,7 @@ class HandleScan(QtCore.QThread):
                     '''
                     self.fr.face_detection_widget.resMeanFRSession()
                     '''
-                    self.graphWidgetclear.emit(1)
+                    #self.graphWidgetclear.emit(1)
                     self.zerotrigger = False
 
                     self.localtimer = time.strftime("%X %x")
@@ -329,6 +347,10 @@ class HandleScan(QtCore.QThread):
                     self.lctimer = 0
                     self.testtimer = 0
                     self.timelog = ""
+
+                    
+                    self.meanrpm = 0
+                    self.rpmtrig = False
 
 
                 if self.scanprogress == 2:
@@ -351,30 +373,60 @@ class HandleScan(QtCore.QThread):
                         self.scanprogress = 7
 
                 if self.scanprogress == 4:
-                    self.InstructionssetText.emit("Please Stand Still")
+                    self.InstructionssetText.emit("Please Stand Still for RPM capture")
                     time.sleep(1) 
                     self.scanprogress = 5
 
                 if self.scanprogress == 5:
                     self.tempRPM = 0
+                    self.GraphX = [0]
+                    self.GraphY = [0]
                     self.scanprogress = 6
 
                 if(self.scanprogress == 6):
-                    if(self.tempRPM > 5):
-                        self.FinalReadings["rpm"] = self.tempRPM
-                        self.InstructionssetText.emit("RPM Captured Succesfully")
-                        self.rpmtimer = round((time.time() - self.timer),2)
-                        self._gauge3value.emit(self.tempRPM)
-                        time.sleep(1) 
+                    if(self.lcflag==0):
+                        
+                        self.rpmtrig = True
+                    
+                        #if(self.tempRPM > 5):
+                            #self.FinalReadings["rpm"] = self.tempRPM
+                            #self.InstructionssetText.emit("RPM Captured Succesfully")
+                        
+                        #while True:print(self.rpmlist,self.meanrpm)
+                        if(len(self.rpmlist)>=5):
+                            
+                            self.rpmtrig = False
+                            self.meanrpm = sum(self.rpmlist)/len(self.rpmlist)
+                            #while True:print(self.rpmlist,self.meanrpm)
+                            if(self.meanrpm>2):
+                                self.rpmtrig = False
+
+                            self.FinalReadings["rpm"] = self.meanrpm
+                            
+                            self.rpmtimer = round((time.time() - self.timer),2)
+                            #while True:print(self.meanrpm)
+                            self._gauge3value.emit(self.meanrpm)
+                            
+                            self.lcflag=1
+                            #while True:print(self.lcflag)
+                            self.InstructionssetText.emit("RPM Captured")
+                            #time.sleep(1) 
+                            #self.scanprogress = 10
+                            #self.InstructionssetText.emit("Resetting Graphs")
+                            #self.graphWidgetclear.emit(1)
+                            
+                            time.sleep(0.2)
+                        else:
+                            #while True: print(self.lcflag)
+                            self.InstructionssetText.emit("Movement Detected\nPlease Stand Still")
+                            time.sleep(1)
+                    if (self.lcflag ==1):
+                        self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
+                        self.startplotting = True 
                         self.scanprogress = 10
-                        self.InstructionssetText.emit("Resetting Graphs")
-                        self.graphWidgetclear.emit(1)
-                        self.GraphX = [0]
-                        self.GraphY = [0]
-                        time.sleep(0.2)
-                    else:
-                        self.InstructionssetText.emit("Movement Detected\nPlease Stand Still")
-                        time.sleep(1)
+                    #print(self.graphX[-1])
+                    
+                    
 
 
                 if(self.scanprogress == 7):
@@ -401,7 +453,7 @@ class HandleScan(QtCore.QThread):
                         self._gauge2value.emit(self.tempOxyMeterV)
                         self.FinalReadings["o2levels"] = self.tempOxyMeterV
                         self.InstructionssetText.emit("Done\nPlease Lift your Finger off")
-                        self.graphWidgetclear.emit(1)
+                        #self.graphWidgetclear.emit(1)
                         time.sleep(1)
                         self.oxytimer = round((time.time() - self.timer),2)
                         self.scanprogress = 4
@@ -411,8 +463,22 @@ class HandleScan(QtCore.QThread):
 
                 if(self.scanprogress == 10):
                     
-                    self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
+                    """ self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
+                    #while True: print(self.tinst)
+                    #if self.tinst!=0:
+                    #    self.zerotrigger = True
+
+                    #if self.zerotrigger == True:
+                    #    self.GraphY.append(self.tinst)
+                    #    self.GraphX.append(self.GraphX[-1] + 1)
                     self.startplotting = True 
+                    #print(self.graphX[-1])
+                    if(self.GraphX[-1]>100):
+                        self.startplotting = False """
+                    
+                    """ self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
+                    self.startplotting = True  """
+
                     if(self.GraphX[-1]>100):
                         self.startplotting = False
                         lc = 0

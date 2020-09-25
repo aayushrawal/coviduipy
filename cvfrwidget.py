@@ -155,9 +155,9 @@ class Visualizer(QtWidgets.QWidget):
     image_data = QtCore.pyqtSignal(np.ndarray)
 
 
-    def __init__(self, parent=None, scale = 1.3, feed = '/dev/video3'):
+    def __init__(self, parent=None, scale = 1.3, feed = '/dev/video6'):
         super().__init__(parent)
-        self.varsd = {'input': '/dev/video3', 'match_algo': 'HUNGARIAN', 'd_lm': 'CPU', 'd_fd': 'CPU', 'perf_stats': False, 't_id': 0.3, 'cpu_lib': '', 'run_detector': False, 'fd_input_height': 0, 'timelapse': False, 'm_fd': '/home/sensor/Desktop/coviduipy/models/face-detection-retail-0004.xml', 't_fd': 0.6, 'crop_height': 0, 'no_show': False, 'exp_r_fd': 1.15, 'fd_input_width': 0, 'allow_grow': False, 'm_lm': '/home/sensor/Desktop/coviduipy/models/landmarks-regression-retail-0009.xml', 'gpu_lib': '', 'crop_width': 0, 'fg': 'Face_Gallery', 'verbose': True, 'm_reid': '/home/sensor/Desktop/coviduipy/models/face-reidentification-retail-0095.xml', 'd_reid': 'CPU'}
+        self.varsd = {'input': '/dev/video6', 'match_algo': 'HUNGARIAN', 'd_lm': 'CPU', 'd_fd': 'CPU', 'perf_stats': False, 't_id': 0.3, 'cpu_lib': '', 'run_detector': False, 'fd_input_height': 0, 'timelapse': False, 'm_fd': '/home/sensor/Desktop/coviduipy/models/face-detection-retail-0004.xml', 't_fd': 0.6, 'crop_height': 0, 'no_show': False, 'exp_r_fd': 1.15, 'fd_input_width': 0, 'allow_grow': False, 'm_lm': '/home/sensor/Desktop/coviduipy/models/landmarks-regression-retail-0009.xml', 'gpu_lib': '', 'crop_width': 0, 'fg': '/home/sensor/Desktop/coviduipy/Face_Gallery', 'verbose': True, 'm_reid': '/home/sensor/Desktop/coviduipy/models/face-reidentification-retail-0095.xml', 'd_reid': 'CPU'}
         
         self.varsd["input"] = feed
         self.frame_processor = FrameProcessor(self.varsd)
@@ -184,6 +184,7 @@ class Visualizer(QtWidgets.QWidget):
         self.FRTrainflag = 0
 
         self.text="None"
+        self.label = "None"
 
     def update_fps(self):
         now = time.time()

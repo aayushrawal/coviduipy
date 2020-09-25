@@ -16,6 +16,8 @@ except ImportError:
   from Queue import Queue
 import platform
 
+from openvino_inference.detection import ModelDetection
+
 class RecordVideo(QtCore.QObject):
     image_data = QtCore.pyqtSignal(np.ndarray)
     BUF_SIZE = 2
@@ -227,6 +229,28 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         #image_data = cv2.resize(image_data,(int(320*self.vsc),int(240*self.vsc)),interpolation=cv2.INTER_AREA)
 
 
+        #video_src = '/dev/video0'
+        color_fd = (0, 150, 250)
+        pd_path = 'models/face-detection-retail-0004'
+        device = "CPU"
+        cpu_extension = None
+        view_detection = True
+
+        th_detection = 0.7
+        detection = ModelDetection(model_name=pd_path, device=device, extensions=cpu_extension, threshold = th_detection)
+        detection.load_model()    
+        #cap = cv2.VideoCapture(video_src)
+        #while cap.isOpened():
+            #ret, frame = cap.read()        
+        boxes = []
+        boxes, scores = detection.predict(image_data)
+        if view_detection:
+            for i in range(len(boxes)):
+                box = boxes[i]
+                cv2.rectangle(frame, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])),(255,255,0), 2)
+            
+
+
         
 
         self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
@@ -238,9 +262,27 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         
         self.temp = round(self.ktof(maxVal),2)
 
+        #####
+        
+        isasyncmode = False
+        cur_request_id = 0
+        next_request_id = 1
+
+        open_vino_model = '/home/alpha/Documents/OpenVINO/models/face-detection-adas-0001.xml'
+        open_vino_library = '/opt/intel/openvino/inference_engine/lib/intel64/libcpu_extension_sse4.so'
+        open_vino_device = 'CPU'
+        open_vino_threshold = 0.8
+        # Instantiating the Network class
+        infer_network = Network()
+        # Calling the load_model function
+        # It returns the plugin and the shape of the input layer
+        n,c,h,w = infer_network.load_model(open_vino_model,open_vino_device,1,1,2,open_vino_library)[1]
+        
+        #####
+
         image_data = cv2.resize(image_data,(int(320*self.vsc),int(240*self.vsc)),interpolation=cv2.INTER_AREA)
 
-
+        
         self.image = self.get_qimage(image_data)
         
 

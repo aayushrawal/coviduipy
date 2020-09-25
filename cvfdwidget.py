@@ -16,6 +16,10 @@ except ImportError:
   from Queue import Queue
 import platform
 
+from openvino_inference.detection import ModelDetection
+
+from copy import deepcopy
+
 class RecordVideo(QtCore.QObject):
     image_data = QtCore.pyqtSignal(np.ndarray)
     BUF_SIZE = 2
@@ -44,8 +48,6 @@ class RecordVideo(QtCore.QObject):
 
     def timerEvent(self, event):
         if (event.timerId() != self.timer.timerId()):
-            return
-        if self.stop:
             return
         
         ctx = POINTER(uvc_context)()
@@ -131,17 +133,6 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         self.vsc = scale
         self.temp = 0
 
-    def detect_faces(self, image: np.ndarray):
-        # haarclassifiers work better in black and white
-        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        gray_image = cv2.equalizeHist(gray_image)
-
-        faces = self.classifier.detectMultiScale(gray_image,
-                                                 scaleFactor=1.3,
-                                                 minNeighbors=4,
-                                                 flags=cv2.CASCADE_SCALE_IMAGE,
-                                                 minSize=self._min_size)
-        return faces
 
     def ktof(self, val):
         return (1.8 * self.ktoc(val) + 32.0)
@@ -154,6 +145,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         np.right_shift(data, 8, data)
         return cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2RGB)
 
+        
     def display_temperature(self, img, val_k, loc, color):
         val = self.ktof(val_k)
         cv2.putText(img, "{0:.1f} degF".format(val), loc, cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2)
@@ -163,33 +155,11 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
     def image_data_slot(self, image_data):
         
-        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data)
+        #minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(image_data)
+
+        image_data_copy = deepcopy(image_data)
         
         image_data = self.raw_to_8bit(image_data)
-
-
-        """ scale_percent = 100 
-        if(image_data.shape[0]>640):
-            if(image_data.shape[0]>4000):
-                scale_percent = 5
-            elif(image_data.shape[0] > 2000):
-                scale_percent = 10
-            elif (image_data.shape[0] > 1000):
-                scale_percent = 20
-            elif (image_data.shape[0] > 640):
-                scale_percent = 35
-    
-        # calculate the 50 percent of original dimensions
-        width = int(image_data.shape[1] * scale_percent / 100)
-        height = int(image_data.shape[0] * scale_percent / 100)
-
-        # dsize
-        dsize = (width, height)
-
-        # resize image
-        image_data = cv2.resize(image_data, dsize) """
-
-        
 
         """ faces = self.detect_faces(image_data)
 
@@ -224,23 +194,61 @@ class FaceDetectionWidget(QtWidgets.QWidget):
             except(ValueError):
                 pass """
 
-        #image_data = cv2.resize(image_data,(int(320*self.vsc),int(240*self.vsc)),interpolation=cv2.INTER_AREA)
+       
+        ######
 
+        #video_src = '/dev/video0'
+        color_fd = (0, 150, 250)
+        pd_path = 'models/face-detection-retail-0005'
+        device = "CPU"
+        cpu_extension = None
+
+        th_detection = 0.65
+        self.detection = ModelDetection(model_name=pd_path, device=device, extensions=cpu_extension, threshold = th_detection)
+        self.detection.load_model()    
+        #cap = cv2.VideoCapture(video_src)
+        #while cap.isOpened():
+            #ret, frame = cap.read()        
+        self.boxes = []
+        self.boxes, scores = self.detection.predict(image_data)
+
+        for i in range(len(self.boxes)):
+            box = self.boxes[i]
+            cv2.rectangle(image_data, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])),(255,255,0), 2)
+
+            #cv2.imshow()
+            try:
+                face_roi = image_data_copy[int(box[0]+4):int(box[0]+box[2]-4),int(box[1]+4):int(box[1]+box[3]-4)]
+                minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(face_roi)
+                minVal1, maxVal1, minLoc1, maxLoc1 = cv2.minMaxLoc(image_data_copy)
+                print(maxLoc,maxLoc1)
+                if(maxVal!=(-459.67)):
+                    new_maxLoc = (int(maxLoc[0]+box[0]),int(maxLoc[1]+box[1]))
+                    self.display_temperature(image_data, maxVal, new_maxLoc, (0, 0, 255))
+                    self.temp = round(self.ktof(maxVal),2)
+                    print(self.temp)
+                else:
+                    pass
+            except(ValueError):
+                pass
 
         
+        ######
 
-        self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
+        #self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
 
 
         cv2.imshow("thermal", image_data)
 
         cv2.waitKey(1)
         
-        self.temp = round(self.ktof(maxVal),2)
+        #self.temp = round(self.ktof(maxVal),2)
+
+        
 
         image_data = cv2.resize(image_data,(int(320*self.vsc),int(240*self.vsc)),interpolation=cv2.INTER_AREA)
 
-
+        
         self.image = self.get_qimage(image_data)
         
 

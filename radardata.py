@@ -151,6 +151,8 @@ def main():
             print("XeThru found at:",p.device)
             device_name = p.device
 
+    #device_name = 'ttyACM0'
+
     #print_module_info(device_name)
     record = False
     x4m200 = configure_x4m200(

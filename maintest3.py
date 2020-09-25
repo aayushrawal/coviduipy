@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QAp
 from radialbar import RadialBar
 import serial
 import serial.tools.list_ports
-from cvfdwidget import MainWidget as FDWidget
+from cvwidget import MainWidget as FDWidget
 from cvfrwidget import MainWidget as FRWidget
 import pyqtgraph as pg
 import time
@@ -237,7 +237,7 @@ class HandleScan(QtCore.QThread):
         try:
             #self.debugWindowsetText.emit("Debug Info: "+_str)
             if(("X4M200" in _str) and ("MAX3266BPM" in _str)):
-                self.debugWindowsetText.emit("Debug Info: " + _str)
+                #self.debugWindowsetText.emit("Debug Info: " + _str)
                 data = _str.split(",")
                 #self._gauge1.value = int(data[7])
                 #self._gauge2.value = int(data[11])
@@ -249,7 +249,7 @@ class HandleScan(QtCore.QThread):
 
                 self.radarstatus = data[4]
 
-                #self.debugWindowsetText.emit("Radar Info: "+self.radarstatus)
+                self.debugWindowsetText.emit("Radar Info: "+self.radarstatus)
 
                 if(self.startplotting):
                     tinst = int(float(data[6]))
@@ -604,9 +604,7 @@ class HandleScan(QtCore.QThread):
 
                        
                         sender_email = "coviduipy@gmail.com"
-                        receiver_email = "keithscheffler@me.com"
-                        receiver_email2 = "jayvikram001@gmail.com"
-                        receiver_email3 = "aayushrawal98@gmail.com"
+                        receiver_email = "aayushrawal98@gmail.com"
                         password = "sensor1!" #input("Type your password and press enter:")
 
                         message = MIMEMultipart("alternative")
@@ -890,18 +888,6 @@ class HandleScan(QtCore.QThread):
                             server.sendmail(
                                 sender_email, receiver_email, message.as_string()
                             )
-                        
-                        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-                            server.login(sender_email, password)
-                            server.sendmail(
-                                sender_email, receiver_email2, message.as_string()
-                            )
-                        
-                        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-                            server.login(sender_email, password)
-                            server.sendmail(
-                                sender_email, receiver_email3, message.as_string()
-                            )
 
 
 
@@ -1077,7 +1063,7 @@ class MainWindow(QWidget):
         )
         #debugWindow.setSizePolicy(QtWidgets.QSizePolicy.Expanding,QtWidgets.QSizePolicy.Fixed)
         self.debugWindow.setStyleSheet("background-color: white; padding: 4px; qproperty-alignment: AlignRight; margin-left:50%;")
-        self.debugWindow.setText("Debug Window")
+        self.debugWindow.setText("Radar Window")
         self._debugWindow = QtWidgets.QHBoxLayout()
         self._debugWindow.addSpacerItem(QtWidgets.QSpacerItem(250,10,QtWidgets.QSizePolicy.Expanding))
         self._debugWindow.addWidget(self.debugWindow)
