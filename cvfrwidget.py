@@ -27,6 +27,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 
+import subprocess
+
 """ 
 import importlib.util
 
@@ -155,9 +157,9 @@ class Visualizer(QtWidgets.QWidget):
     image_data = QtCore.pyqtSignal(np.ndarray)
 
 
-    def __init__(self, parent=None, scale = 1.3, feed = '/dev/video6'):
+    def __init__(self, parent=None, scale = 1.3, feed = '/dev/video1'):
         super().__init__(parent)
-        self.varsd = {'input': '/dev/video6', 'match_algo': 'HUNGARIAN', 'd_lm': 'CPU', 'd_fd': 'CPU', 'perf_stats': False, 't_id': 0.3, 'cpu_lib': '', 'run_detector': False, 'fd_input_height': 0, 'timelapse': False, 'm_fd': '/home/sensor/Desktop/coviduipy/models/face-detection-retail-0004.xml', 't_fd': 0.6, 'crop_height': 0, 'no_show': False, 'exp_r_fd': 1.15, 'fd_input_width': 0, 'allow_grow': False, 'm_lm': '/home/sensor/Desktop/coviduipy/models/landmarks-regression-retail-0009.xml', 'gpu_lib': '', 'crop_width': 0, 'fg': '/home/sensor/Desktop/coviduipy/Face_Gallery', 'verbose': True, 'm_reid': '/home/sensor/Desktop/coviduipy/models/face-reidentification-retail-0095.xml', 'd_reid': 'CPU'}
+        self.varsd = {'match_algo': 'HUNGARIAN', 'd_lm': 'CPU', 'd_fd': 'CPU', 'perf_stats': False, 't_id': 0.3, 'cpu_lib': '', 'run_detector': False, 'fd_input_height': 0, 'timelapse': False, 'm_fd': '/home/sensor/Desktop/coviduipy/models/face-detection-retail-0004.xml', 't_fd': 0.6, 'crop_height': 0, 'no_show': False, 'exp_r_fd': 1.15, 'fd_input_width': 0, 'allow_grow': False, 'm_lm': '/home/sensor/Desktop/coviduipy/models/landmarks-regression-retail-0009.xml', 'gpu_lib': '', 'crop_width': 0, 'fg': '/home/sensor/Desktop/coviduipy/Face_Gallery', 'verbose': True, 'm_reid': '/home/sensor/Desktop/coviduipy/models/face-reidentification-retail-0095.xml', 'd_reid': 'CPU'}
         
         self.varsd["input"] = feed
         self.frame_processor = FrameProcessor(self.varsd)
@@ -406,9 +408,12 @@ class Visualizer(QtWidgets.QWidget):
 
 
 class MainWidget(QtWidgets.QWidget):
-    def __init__(self,scale = 1.3, parent=None):
+    def __init__(self,scale = 1.3, feed="/dev/video1", parent=None):
         super().__init__(parent)
-        self.face_detection_widget =  Visualizer()
+        proc=subprocess.Popen("v4l2-ctl --list-devices | grep \"Intel(R) RealSense(TM)\" -A3", shell=True, stdout=subprocess.PIPE,)
+        output=proc.communicate()[0].decode('utf-8').split("\n")
+        
+        self.face_detection_widget =  Visualizer(feed = output[-2][1:])
         self.face_detection_widget.vsc = scale
         self.image_data_slot=self.face_detection_widget.imgdisplay
         self.startrec=self.face_detection_widget.start_recording()

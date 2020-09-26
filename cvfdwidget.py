@@ -24,7 +24,7 @@ class RecordVideo(QtCore.QObject):
     image_data = QtCore.pyqtSignal(np.ndarray)
     BUF_SIZE = 2
 
-    def __init__(self, camera_port=0, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.stop = False
         self.timer = QtCore.QBasicTimer()
@@ -222,7 +222,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
                 minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(face_roi)
                 minVal1, maxVal1, minLoc1, maxLoc1 = cv2.minMaxLoc(image_data_copy)
                 print(maxLoc,maxLoc1)
-                if(maxVal!=(-459.67)):
+                if(maxVal>80):
                     new_maxLoc = (int(maxLoc[0]+box[0]),int(maxLoc[1]+box[1]))
                     self.display_temperature(image_data, maxVal, new_maxLoc, (0, 0, 255))
                     self.temp = round(self.ktof(maxVal),2)
@@ -282,12 +282,12 @@ class FaceDetectionWidget(QtWidgets.QWidget):
 
 
 class MainWidget(QtWidgets.QWidget):
-    def __init__(self, parent=None, scale=1.3, feed=0):
+    def __init__(self, parent=None, scale=1.3):
         super().__init__(parent)
         #fp = haarcascade_filepath
         self.face_detection_widget = FaceDetectionWidget(scale=scale)
         self.face_detection_widget.vsc = scale        
-        self.record_video = RecordVideo(feed)
+        self.record_video = RecordVideo()
         self.image_data_slot = self.face_detection_widget.image_data_slot
         self.record_video.image_data.connect(self.image_data_slot)
         layout = QtWidgets.QVBoxLayout()
