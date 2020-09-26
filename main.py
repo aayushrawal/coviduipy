@@ -1090,9 +1090,9 @@ class MainWindow(QWidget):
         self.div = 350
 
             
-        self.fd = FDWidget(scale=(self.geometry().height()/self.div), feed="/dev/video0")
+        self.fd = FDWidget(scale=(self.geometry().height()/self.div))
         #self.fr = FRWidget(scale=(self.geometry().height()/self.div), feed="/dev/video3")
-        self.fr = FRWidget()
+        self.fr = FRWidget(scale=(self.geometry().height()/self.div))
         #print(self.fr.face_detection_widget.text)
 
         self.usermsg = QtWidgets.QLabel()
