@@ -212,23 +212,28 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         self.boxes = []
         self.boxes, scores = self.detection.predict(image_data)
 
+            
+
         for i in range(len(self.boxes)):
             box = self.boxes[i]
             cv2.rectangle(image_data, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])),(255,255,0), 2)
-
-            #cv2.imshow()
             try:
                 face_roi = image_data_copy[int(box[0]+4):int(box[0]+box[2]-4),int(box[1]+4):int(box[1]+box[3]-4)]
+                
                 minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(face_roi)
-                minVal1, maxVal1, minLoc1, maxLoc1 = cv2.minMaxLoc(image_data_copy)
-                print(maxLoc,maxLoc1)
+
+                #minVal1, maxVal1, minLoc1, maxLoc1 = cv2.minMaxLoc(image_data_copy)
+
+                maxLoc_frame = (int(box[0]+maxLoc[0]),int(box[1]+maxLoc[1]))
+                
                 if(maxVal>80):
-                    new_maxLoc = (int(maxLoc[0]+box[0]),int(maxLoc[1]+box[1]))
-                    self.display_temperature(image_data, maxVal, new_maxLoc, (0, 0, 255))
-                    self.temp = round(self.ktof(maxVal),2)
-                    print(self.temp)
-                else:
-                    pass
+                    #print(int(maxLoc[0]+box[0]),int(maxLoc[1]+box[1]))
+                    #print(int(maxLoc1[0]),int(maxLoc1[1]))
+                    if(maxLoc_frame[0] > box[0] and maxLoc_frame[0]<box[2] and maxLoc_frame[1] > box[1] and maxLoc_frame[1]<box[3]):
+                        self.display_temperature(image_data, maxVal, maxLoc_frame, (0, 0, 255))
+                        self.temp = round(self.ktof(maxVal),2)
+                    #print(self.temp)
+                else:pass
             except(ValueError):
                 pass
 

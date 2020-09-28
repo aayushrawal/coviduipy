@@ -24,14 +24,14 @@ from email.mime.image import MIMEImage
 
 
 
-""" ports = list(serial.tools.list_ports.comports())
+ports = list(serial.tools.list_ports.comports())
 for p in ports:
     if("XeThru" in p.description):
         print("XeThru found at:",p.device)
         RadarPort = p.device
     elif("CDC" in p.description):
         print("Max found at:",p.device)
-        MaxPort = p.device """
+        MaxPort = p.device
 
 class SerialThread(QtCore.QThread):
     change_value = QtCore.pyqtSignal(str)
@@ -44,19 +44,19 @@ class SerialThread(QtCore.QThread):
 
         
         #record = False
-        """ x4m200 = radardata.configure_x4m200(RadarPort, False, radardata.x4m200_par_settings)
+        x4m200 = radardata.configure_x4m200(RadarPort, False, radardata.x4m200_par_settings)
         ser = serial.Serial(MaxPort, 9600, timeout = 1)
         ser.write(str.encode("reset\n"))
         ser.write(str.encode("set_cfg sys_bp 121 119 122\n"))
         ser.write(str.encode("set_cfg bpt dia_bp 91 79 82\n"))
         ser.write(str.encode("read bpt 1\n"))
-         """
+        
         
         while True:
             if self._break:
                 return
             recv = ["X4M200","RPM","0","State","NO DATA","LD","0","MAX3266BPM","HR","0","C","0","Oxygen Levels","0", "Status","status_Code", "Ext_status", "ext_status", "OxygenRvalue", "96"]
-            """ radar_data = radardata.print_x4m200_messages(x4m200).split()
+            radar_data = radardata.print_x4m200_messages(x4m200).split()
             recv[2] = str(int(float(radar_data[1])))
             recv[6] = str(int(float(radar_data[3])))
             recv[4] = radar_data[5]
@@ -65,14 +65,14 @@ class SerialThread(QtCore.QThread):
             if len(reader) == 15:
                 recv[9] = str(int(float(reader[3])))
                 recv[11] = str(int(float(reader[11])))
-                recv[13] = str(int(float(reader[7]))) """
+                recv[13] = str(int(float(reader[7])))
                 
-            recv[2]="12"
+            """ recv[2]="12"
             recv[6]="9"
             recv[9]="72"
             recv[13]="98"
-            recv[4]="BREATHING"
-            #print(radar_data)
+            recv[4]="BREATHING" """
+            print(radar_data)
             
             
             
@@ -578,7 +578,7 @@ class HandleScan(QtCore.QThread):
                     self.timelog = [self.dbtime,self.temptimer,self.FinalReadings["temp"],self.hrtimer,self.FinalReadings["hr"],self.oxytimer,self.FinalReadings["o2levels"],self.rpmtimer,self.FinalReadings["rpm"],self.lctimer,self.FinalReadings["ld"],self.testtimer]
                    
 
-                    with open("/home/sensor/Desktop/coviduipy/log.csv","a+",newline = "") as file:
+                    with open("/home/sensor/Desktop/coviduipy/log_test.csv","a+",newline = "") as file:
                         writer = csv.writer(file)
                         writer.writerow(self.timelog)
 

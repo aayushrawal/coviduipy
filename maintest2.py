@@ -556,7 +556,7 @@ class HandleScan(QtCore.QThread):
                     self.timelog = [self.dbtime,self.temptimer,self.FinalReadings["temp"],self.hrtimer,self.FinalReadings["hr"],self.oxytimer,self.FinalReadings["o2levels"],self.rpmtimer,self.FinalReadings["rpm"],self.lctimer,self.FinalReadings["ld"],self.testtimer]
                    
 
-                    with open("/home/sensor/Desktop/coviduipy/log.csv","a+",newline = "") as file:
+                    with open("/home/sensor/Desktop/coviduipy/log_test_2.csv","a+",newline = "") as file:
                         writer = csv.writer(file)
                         writer.writerow(self.timelog)
 

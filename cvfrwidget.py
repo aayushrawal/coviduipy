@@ -392,24 +392,11 @@ class Visualizer(QtWidgets.QWidget):
                     id = self.frame_processor.faces_database.dump_faces(crop, face_identities[i].descriptor, name)
                     face_identities[i].id = id 
         #print(self.label)
-        
-        """ mydb = mysql.connector.connect(host = "localhost", user = "root", password = "root", database = "user_info")
-
-        mycursor = mydb.cursor()
-        #timelog = [userid,imgpath,testtimer, FinalResult,FinalReadings["temp"],FinalReadings["hr"],FinalReadings["o2levels"],FinalReadings["rpm"],FinalReadings["ld"]]
-
-        userid = [self.label,"/home/sensor/Desktop/coviduipy/"+self.label+"-0.jpg",None,None,None,None,None,None,None]
-        sql = "INSERT INTO positive (id, imgpath, time, result, temp, hr, o2, rpm, ld ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
-        mycursor.execute(sql, userid)
-
-        mydb.commit() """
-
- 
-
 
 class MainWidget(QtWidgets.QWidget):
     def __init__(self,scale = 1.3, feed="/dev/video1", parent=None):
         super().__init__(parent)
+        #Auto recognize third cam(rgb) for intel realsense 515
         proc=subprocess.Popen("v4l2-ctl --list-devices | grep \"Intel(R) RealSense(TM)\" -A3", shell=True, stdout=subprocess.PIPE,)
         output=proc.communicate()[0].decode('utf-8').split("\n")
         
@@ -422,9 +409,7 @@ class MainWidget(QtWidgets.QWidget):
         self.layout.addWidget(self.face_detection_widget)
         self.setLayout(self.layout)
         
-
-
-    
+ 
 
 def main():
 

@@ -23,15 +23,23 @@ from time import strftime
 from email.mime.image import MIMEImage
 
 
-
+""" flag1, flag2 =False, False  """
 ports = list(serial.tools.list_ports.comports())
 for p in ports:
     if("XeThru" in p.description):
         print("XeThru found at:",p.device)
         RadarPort = p.device
+
     elif("CDC" in p.description):
         print("Max found at:",p.device)
         MaxPort = p.device
+
+""" if(flag1 and flag2):
+    pass
+else:
+    if(flag1):
+        print("Sensors not found")
+    sys.exit() """
 
 class SerialThread(QtCore.QThread):
     change_value = QtCore.pyqtSignal(str)
