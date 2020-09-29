@@ -324,7 +324,7 @@ class HandleScan(QtCore.QThread):
                     '''
                     self.fr.face_detection_widget.resMeanFRSession()
                     '''
-                    self.graphWidgetclear.emit(1)
+                    #self.graphWidgetclear.emit(1)
                     self.zerotrigger = False
 
                     self.localtimer = time.strftime("%X %x")
@@ -370,16 +370,18 @@ class HandleScan(QtCore.QThread):
                 if(self.scanprogress == 6):
                     if(self.tempRPM > 5):
                         self.FinalReadings["rpm"] = self.tempRPM
-                        self.InstructionssetText.emit("RPM Captured Succesfully")
+                        #self.InstructionssetText.emit("RPM Captured Succesfully")
                         self.rpmtimer = round((time.time() - self.timer),2)
                         self._gauge3value.emit(self.tempRPM)
-                        time.sleep(1) 
+                        self.InstructionssetText.emit("RPM Captured Succesfully\nPlease Stand Straight and Take 6 Deep Breaths")
+                        self.startplotting = True 
+                        #time.sleep(1) 
                         self.scanprogress = 10
-                        self.InstructionssetText.emit("Resetting Graphs")
+                        """ self.InstructionssetText.emit("Resetting Graphs")
                         self.graphWidgetclear.emit(1)
                         self.GraphX = [0]
                         self.GraphY = [0]
-                        time.sleep(0.2)
+                        time.sleep(0.2) """
                     else:
                         self.InstructionssetText.emit("Movement Detected\nPlease Stand Still")
                         time.sleep(1)
@@ -419,8 +421,8 @@ class HandleScan(QtCore.QThread):
 
                 if(self.scanprogress == 10):
                     
-                    self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
-                    self.startplotting = True 
+                    """ self.InstructionssetText.emit("Please Stand Straight and Take 6 Deep Breaths")
+                    self.startplotting = True  """
                     if(self.GraphX[-1]>100):
                         self.startplotting = False
                         lc = 0
@@ -485,7 +487,7 @@ class HandleScan(QtCore.QThread):
                     if(self.FinalReadings["o2levels"]>self._gauge2_normalMaxValue) or (self.FinalReadings["o2levels"]<self._gauge2_normalMinValue):
                         status = 0
                         #self.emaildata["emailo2"] = "<p style=\"color=red\">"+strself.emaildata["emailo2"]+"</p>"
-                    if(self.FinalReadings["temp"]>99) or (self.FinalReadings["temp"]<90):
+                    if(self.FinalReadings["temp"]>100.4) or (self.FinalReadings["temp"]<90):
                         status = 0
                         #self.emaildata["emailtemp"] = "<p style=\"color=red\">"+self.emaildata["emailtemp"]+"</p>"
                     if(self.FinalReadings["rpm"]>self._gauge3_normalMaxValue) or (self.FinalReadings["rpm"]<self._gauge3_normalMinValue):
@@ -530,12 +532,15 @@ class HandleScan(QtCore.QThread):
                     mycursor = mydb.cursor()
                 
                     
-                    
+                    if self.faceID:
                     #timelog = [userid,imgpath,testtimer, FinalResult,FinalReadings["temp"],FinalReadings["hr"],FinalReadings["o2levels"],FinalReadings["rpm"],FinalReadings["ld"]]
-                    userid = [int(self.faceID),"/home/sensor/Desktop/coviduipy/Face_Gallery/"+self.faceID+"-0.jpg",self.dbtime, self.result,int(self.FinalReadings["temp"]),int(self.FinalReadings["hr"]),int(self.FinalReadings["o2levels"]),int(self.FinalReadings["rpm"]),int(self.FinalReadings["ld"])]
+                        userid = [int(self.faceID),"/home/sensor/Desktop/coviduipy/Face_Gallery/"+self.faceID+"-0.jpg",self.dbtime, self.result,int(self.FinalReadings["temp"]),int(self.FinalReadings["hr"]),int(self.FinalReadings["o2levels"]),int(self.FinalReadings["rpm"]),int(self.FinalReadings["ld"])]
+                    else: 
+                        userid = [int(self.faceID),None,self.dbtime, self.result,int(self.FinalReadings["temp"]),int(self.FinalReadings["hr"]),int(self.FinalReadings["o2levels"]),int(self.FinalReadings["rpm"]),int(self.FinalReadings["ld"])]
+                        
                     
                     sql = "INSERT INTO positive (id, imgpath, time, result, temp, hr, o2, rpm, ld ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"
-                    
+                        
                     mycursor.execute("SELECT count(id) from positive WHERE id=%s;",(self.faceID,))
                     userstatus = mycursor.fetchall()
 
@@ -578,7 +583,7 @@ class HandleScan(QtCore.QThread):
                                 o2str=str(res_data[i][6])
                             res_vals["o2"].append(o2str)
                             #res_data[i][6] = "<p style=\"color=red\">"+str(res_data[i][6])+"</p>"
-                            if (res_data[i][4] > 99) or (res_data[i][4] < 90):
+                            if (res_data[i][4] > 100.4) or (res_data[i][4] < 90):
                                 tempstr="\""+str(res_data[i][4])+"\""
                                 #tempstr="""<p style="color=red !important;">"""+str(res_data[i][4])+"</p>"
                             else:
@@ -971,7 +976,7 @@ class MainWindow(QWidget):
         self._gauge1.value = 0
         self.myfont = QtGui.QFont()
         #self._gauge1.textFont = self.myfont
-        self._gauge1._normalMinValue = 70
+        self._gauge1._normalMinValue = 65
         self._gauge1._normalMaxValue = 120
 
         self._gauge2 = RadialBar(self)
@@ -1002,8 +1007,8 @@ class MainWindow(QWidget):
         self._gauge3.maxValue = 40
         self._gauge3.minValue = 5
         self._gauge3.value = 0
-        self._gauge3._normalMinValue = 11
-        self._gauge3._normalMaxValue = 18
+        self._gauge3._normalMinValue = 10
+        self._gauge3._normalMaxValue = 20
         #self._gauge3.textFont = self.myfont
 
         self._gauge4 = RadialBar(self)

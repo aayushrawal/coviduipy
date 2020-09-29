@@ -206,9 +206,9 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         th_detection = 0.65
         self.detection = ModelDetection(model_name=pd_path, device=device, extensions=cpu_extension, threshold = th_detection)
         self.detection.load_model()    
-        #cap = cv2.VideoCapture(video_src)
-        #while cap.isOpened():
-            #ret, frame = cap.read()        
+        """ cap = cv2.VideoCapture(video_src)
+        while cap.isOpened():
+            ret, frame = cap.read()  """       
         self.boxes = []
         self.boxes, scores = self.detection.predict(image_data)
 
@@ -222,17 +222,35 @@ class FaceDetectionWidget(QtWidgets.QWidget):
                 
                 minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(face_roi)
 
-                #minVal1, maxVal1, minLoc1, maxLoc1 = cv2.minMaxLoc(image_data_copy)
+                minVal1, maxVal1, minLoc1, maxLoc1 = cv2.minMaxLoc(image_data_copy)
 
-                maxLoc_frame = (int(box[0]+maxLoc[0]),int(box[1]+maxLoc[1]))
+                self.display_temperature(face_roi, maxVal, maxLoc, (255, 0, 0))
+
+                cv2.imshow("face", face_roi)
+
+                cv2.waitKey(1)
+
+                """ maxLoc_frame = (int(box[0]+maxLoc[0]),int(box[1]+maxLoc[1])) """
                 
                 if(maxVal>80):
-                    #print(int(maxLoc[0]+box[0]),int(maxLoc[1]+box[1]))
-                    #print(int(maxLoc1[0]),int(maxLoc1[1]))
-                    if(maxLoc_frame[0] > box[0] and maxLoc_frame[0]<box[2] and maxLoc_frame[1] > box[1] and maxLoc_frame[1]<box[3]):
-                        self.display_temperature(image_data, maxVal, maxLoc_frame, (0, 0, 255))
+                    """ print(int(maxLoc[0]+box[0]),int(maxLoc[1]+box[1]))
+                    print(int(maxLoc1[0]),int(maxLoc1[1])) """
+                    if(int(box[0]+maxLoc1[0]) > box[0] and int(box[0]+maxLoc1[0])<box[2] and int(box[1]+maxLoc1[1]) > box[1] and int(box[1]+maxLoc1[1])<box[3]):
+                        """ self.display_temperature(image_data, maxVal, maxLoc_frame, (0, 0, 255))
+                        self.temp = round(self.ktof(maxVal),2) """
+                        #maxLoc_frame = (int(box[0]+maxLoc[0]),int(box[1]+maxLoc[1]))
+                        """ elif maxLoc[0]>box[0] and maxLoc[0]<box[2] and maxLoc[1]>box[1] and maxLoc[1]<box[3]:
+                        maxLoc_frame = (int(box[2]+maxLoc[0]),int(box[3]+maxLoc[1])) """
+                        self.display_temperature(image_data, maxVal1, maxLoc1, (0, 0, 255))
                         self.temp = round(self.ktof(maxVal),2)
-                    #print(self.temp)
+                    print("_____")
+                    #print(maxLoc)
+                    
+                    print((box[0],box[1]))
+                    # print(maxLoc_frame)
+                    print(box)
+                    print(maxLoc1)
+                    print(self.temp)
                 else:pass
             except(ValueError):
                 pass
@@ -243,7 +261,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         #self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
 
 
-        cv2.imshow("thermal", image_data)
+        #cv2.imshow("face", face_roi)
 
         cv2.waitKey(1)
         

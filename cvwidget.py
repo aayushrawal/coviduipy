@@ -232,7 +232,7 @@ class FaceDetectionWidget(QtWidgets.QWidget):
         self.display_temperature(image_data, maxVal, maxLoc, (0, 0, 255))
 
 
-        cv2.imshow("thermal", image_data)
+        #cv2.imshow("thermal", image_data)
 
         cv2.waitKey(1)
         
