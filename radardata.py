@@ -151,7 +151,7 @@ def main():
             print("XeThru found at:",p.device)
             device_name = p.device
 
-    #device_name = 'ttyACM0'
+    #device_name = 'ttyACM3'
 
     #print_module_info(device_name)
     record = False
